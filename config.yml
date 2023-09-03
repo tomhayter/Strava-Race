@@ -2,5 +2,3 @@ strava_secrets:
   client_id:
   client_secret:
   code:
-  access_token:
-  refresh_token:
