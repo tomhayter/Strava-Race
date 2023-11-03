@@ -1,63 +1,43 @@
-:root {
-    --text: #111d11;
-    --background: #ebf4eb;
-    --primary: #82d485;
-    --secondary: #65be67;
-    --accent: #589d59;
-}
-
-h1 {
-    text-align: center;
-  }
-  
-  body {
-    font-family: 'Raleway';
-    font-size: 22px;
-    color: var(--text);
-    background: var(--background);
-  }
-
 .container {
     display: flex;
     align-items: flex-end;
     margin: auto;
     width: 40%;
-  }
+}
   
-  .podium__item {
+.podium__item {
     width: 33.33%;
-  }
+}
   
-  .podium__rank {
+.podium__rank {
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 35px;
     color: var(--background);
-  }
-  
-  .podium__city {
+}
+
+.podium__city {
     text-align: center;
     padding: 0 .5rem;
-  }
-  
-  .podium__number {
+}
+
+.podium__number {
     width: 27px;
     height: 75px;
-  }
-  
-  .podium .first {
+}
+
+.podium .first {
     min-height: 300px;
     background: var(--accent);
-  }
-  
-  .podium .second {
+}
+
+.podium .second {
     min-height: 200px;
     background: var(--secondary);
-  }
-  
-  .podium .third {
+}
+
+.podium .third {
     min-height: 100px;
     background: var(--primary);
-  }
-  
+}

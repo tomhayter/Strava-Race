@@ -106,6 +106,8 @@ def user(request):
 
     closest_below, closest_above, completed = get_nearest_milestones(milestones, total)
 
+    progress = 100 * (total - closest_below[1])/(closest_above[1] - closest_below[1])
+
     context = {
         "name": athlete.firstname + " " + athlete.lastname,
         "total_distance" : round(total, 2),
@@ -115,8 +117,8 @@ def user(request):
         "last_milestone_name" : closest_below[0],
         "last_milestone_distance": closest_below[1],
         "next_milestone_name": closest_above[0],
-        "next_milestone_distance": closest_above[1]
-
+        "next_milestone_distance": closest_above[1],
+        "progress": round(progress)
     }
     return render(request, "tracker/user.html", context)
 
