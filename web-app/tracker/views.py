@@ -71,7 +71,7 @@ def get_distance_stats(activities):
 
 
 
-def index(request):
+def user(request):
     # Strava authentication
     client = Client()
 
@@ -83,7 +83,7 @@ def index(request):
         refresh_response = client.refresh_access_token(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
                                                        refresh_token=access_token["refresh_token"])
         access_token = refresh_response
-        with open('/Deployment/access_token.pickle', 'wb') as f:
+        with open('C:/Users/tomha/Documents/Coding Projects/Strava Race/Deployment/access_token.pickle', 'wb') as f:
             pickle.dump(refresh_response, f)
         print('Refreshed token saved to file')
         client.access_token = refresh_response['access_token']
@@ -117,5 +117,14 @@ def index(request):
         "next_milestone_name": closest_above[0],
         "next_milestone_distance": closest_above[1]
 
+    }
+    return render(request, "tracker/user.html", context)
+
+
+def home(request):
+    context = {
+        "first": "Tom",
+        "second": "Justin",
+        "third": "Ben"
     }
     return render(request, "tracker/home.html", context)
