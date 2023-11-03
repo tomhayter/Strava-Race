@@ -8,13 +8,24 @@
     <title>Race Around the World</title>
 </head>
 <body>
-<p><h1>Welcome to the race around the world {{name}}! </h1> </p>
-    <p>You have travelled {{total_distance}}km. </p>
-    <p>Of this have run {{run_distance}}km, cycled {{cycle_distance}}km, and hiked {{hike_distance}}km.</p>
-    <p>Your most recent milestone was:</p>
-    <p>{{last_milestone_name}} - {{last_milestone_distance}}km</p>
-    <p>The next milestone is:</p>
-    <p>{{next_milestone_name}} - {{next_milestone_distance}}km</p>
+<p><h1>Race Around the World</h1> </p>
+
+
+<div class="container podium">
+    <div class="podium__item">
+      <p class="podium__city">{{second}}</p>
+      <div class="podium__rank second">2</div>
+    </div>
+    <div class="podium__item">
+      <p class="podium__city"><a href="{% url 'user' %}">{{first}}</a></p>
+      <div class="podium__rank first">1</div>
+  </div>
+    <div class="podium__item">
+      <p class="podium__city">{{third}}</p>
+      <div class="podium__rank third">3</div>
+    </div>
+  </>
+
 
 </body>
 </html>
