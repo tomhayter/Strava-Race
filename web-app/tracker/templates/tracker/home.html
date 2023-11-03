@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<link rel="stylesheet" href="{% static 'tracker/style.css' %}">
+<link rel="stylesheet" href="{% static 'tracker/home.css' %}">
 
 <html lang="en-UK">
 <head>
@@ -8,13 +8,13 @@
     <title>Race Around the World</title>
 </head>
 <body>
-<p><h1>Welcome to the race around the world {{ name }}! </h1> </p>
-    <p>You have travelled {{ total_distance }}km. </p>
-    <p>Of this have run {{ run_distance }}km, cycled {{ cycle_distance }}km, and hiked {{ hike_distance }}km.</p>
+<p><h1>Welcome to the race around the world {{name}}! </h1> </p>
+    <p>You have travelled {{total_distance}}km. </p>
+    <p>Of this have run {{run_distance}}km, cycled {{cycle_distance}}km, and hiked {{hike_distance}}km.</p>
     <p>Your most recent milestone was:</p>
-    <p>{{ last_milestone_name }} - {{ last_milestone_distance }}km</p>
+    <p>{{last_milestone_name}} - {{last_milestone_distance}}km</p>
     <p>The next milestone is:</p>
-    <p>{{ next_milestone_name }} - {{ next_milestone_distance }}km</p>
+    <p>{{next_milestone_name}} - {{next_milestone_distance}}km</p>
 
 </body>
 </html>

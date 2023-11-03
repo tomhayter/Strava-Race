@@ -63,7 +63,7 @@ def get_distance_stats(activities):
                 run_distance += unithelper.kilometer(activity.distance).num
             elif activity.type == "Ride":
                 cycle_distance += unithelper.kilometer(activity.distance).num
-            elif activity.type == "Hike":
+            elif activity.type == "Hike" or activity.type == "Walk":
                 hike_distance += unithelper.kilometer(activity.distance).num
 
     return total_distance, run_distance, cycle_distance, hike_distance
