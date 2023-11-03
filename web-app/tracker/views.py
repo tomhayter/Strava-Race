@@ -8,7 +8,7 @@ import yaml
 import openpyxl
 
 # Get config
-config = yaml.safe_load(open("/Deployment/config.yml"))
+config = yaml.safe_load(open("C:/Users/tomha/Documents/Coding Projects/Strava Race/Deployment/config.yml"))
 CLIENT_ID = config["strava_secrets"]["client_id"]
 CLIENT_SECRET = config["strava_secrets"]["client_secret"]
 CODE = config["strava_secrets"]["code"]
@@ -18,7 +18,7 @@ RACE_START = datetime(2023, 8, 24)
 
 def get_milestones():
     # Get Milestones
-    spreadsheet = openpyxl.load_workbook("/Deployment/Running Milestones.xlsx")
+    spreadsheet = openpyxl.load_workbook("C:/Users/tomha/Documents/Coding Projects/Strava Race/Deployment/Running Milestones.xlsx")
     spreadsheet1 = spreadsheet["Sheet1"]
 
     milestones = {}
@@ -75,7 +75,7 @@ def index(request):
     # Strava authentication
     client = Client()
 
-    with open('/Deployment/access_token.pickle', 'rb') as f:
+    with open('C:/Users/tomha/Documents/Coding Projects/Strava Race/Deployment/access_token.pickle', 'rb') as f:
         access_token = pickle.load(f)
 
     if time.time() > access_token['expires_at']:

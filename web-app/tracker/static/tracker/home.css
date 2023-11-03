@@ -3,5 +3,12 @@ h1 {
 }
 
 body {
-  color: #202020;
+  font-family: 'Raleway';
+  font-size: 22px;
+
+  text: #111d11;
+  background: #ebf4eb;
+  primary: #77e97b;
+  secondary: #d0fbd1;
+  accent: #589d59;
 }
