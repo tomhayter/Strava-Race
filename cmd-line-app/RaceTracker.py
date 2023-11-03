@@ -7,7 +7,7 @@ import yaml
 import openpyxl
 
 # Get config
-config = yaml.safe_load(open("./config.yml"))
+config = yaml.safe_load(open("../config.yml"))
 CLIENT_ID = config["strava_secrets"]["client_id"]
 CLIENT_SECRET = config["strava_secrets"]["client_secret"]
 CODE = config["strava_secrets"]["code"]
@@ -81,7 +81,7 @@ client = Client()
 # with open('./access_token.pickle', 'wb') as f:
     # pickle.dump(access_token, f)
 
-with open('./access_token.pickle', 'rb') as f:
+with open('../access_token.pickle', 'rb') as f:
     access_token = pickle.load(f)
 
 if time.time() > access_token['expires_at']:
@@ -89,7 +89,7 @@ if time.time() > access_token['expires_at']:
     refresh_response = client.refresh_access_token(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
                                                    refresh_token=access_token["refresh_token"])
     access_token = refresh_response
-    with open('../access_token.pickle', 'wb') as f:
+    with open('../../access_token.pickle', 'wb') as f:
         pickle.dump(refresh_response, f)
     print('Refreshed token saved to file')
     client.access_token = refresh_response['access_token']
