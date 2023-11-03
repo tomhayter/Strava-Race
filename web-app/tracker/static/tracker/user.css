@@ -1,14 +1,83 @@
-h1 {
+.welcome {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.total {
+  width: 150px;
+  margin: auto;
+  margin-bottom: 40px;
+}
+
+.circle {
+  height: 100%;
+  width: 100%;
+  line-height: 150px;
+  color: var(--background);
+  background-color: var(--accent);
+  border-radius: 50%;
   text-align: center;
 }
 
-body {
-  font-family: 'Raleway';
-  font-size: 22px;
+.splits {
+  display: flex;
+  display: center;
+  width: 750px;
+  margin: auto;
+  margin-bottom: 40px;
+}
 
-  text: #111d11;
-  background: #ebf4eb;
-  primary: #77e97b;
-  secondary: #d0fbd1;
-  accent: #589d59;
+.split {
+  width: 20%;
+  margin: auto;
+  text-align: center;
+}
+
+.milestone-progress {
+  width: 750px;
+  margin: auto;
+  margin-bottom: 40px;
+  color: var(--text)
+}
+
+.progress-bar-filled {
+  height: 10px;
+  background: var(--accent)
+}
+
+.progress-bar {
+  height: 10px;
+  background: var(--secondary)
+}
+
+.milestone-markers {
+  display: flex;
+  font-size: small;
+}
+
+.previous-milestone-marker {
+  background: var(--accent);
+  width: 2px;
+  height: 8px;
+}
+
+.next-milestone-marker {
+  background: var(--secondary);
+  width: 2px;
+  height: 8px;
+  margin-left: auto;
+}
+
+.milestone-labels {
+  display: flex;
+  font-size: small;
+}
+
+.previous-milestone {
+  text-align: left;
+}
+
+.next-milestone {
+  text-align: right;
+  margin-left: auto;
 }
