@@ -1,4 +1,12 @@
-strava_secrets:
+tom:
+  client_id:
+  client_secret:
+  code:
+ben:
+  client_id:
+  client_secret:
+  code:
+justin:
   client_id:
   client_secret:
   code:

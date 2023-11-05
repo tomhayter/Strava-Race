@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.conf import settings
 from stravalib.client import Client
 from stravalib import unithelper
 import pickle
@@ -8,17 +9,16 @@ import yaml
 import openpyxl
 
 # Get config
-config = yaml.safe_load(open("C:/Users/tomha/Documents/Coding Projects/Strava Race/Deployment/config.yml"))
-CLIENT_ID = config["strava_secrets"]["client_id"]
-CLIENT_SECRET = config["strava_secrets"]["client_secret"]
-CODE = config["strava_secrets"]["code"]
+config = yaml.safe_load(open(f"{settings.BASE_DIR}\\..\\..\\Deployment\\config.yml"))
+
+USERS = ["tom", "ben", "justin"]
 
 RACE_START = datetime(2023, 8, 24)
 
 
 def get_milestones():
     # Get Milestones
-    spreadsheet = openpyxl.load_workbook("C:/Users/tomha/Documents/Coding Projects/Strava Race/Deployment/Running Milestones.xlsx")
+    spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
     spreadsheet1 = spreadsheet["Sheet1"]
 
     milestones = {}
@@ -45,19 +45,29 @@ def get_nearest_milestones(milestones, total_distance):
     return closest_below, closest_above, completed
 
 
+def get_total_distance(activities):
+    total_distance = 0
+
+    for activity in activities:
+        dt = datetime(activity.start_date.year,
+                      activity.start_date.month,
+                      activity.start_date.day)
+        if dt > RACE_START:
+            total_distance += unithelper.kilometer(activity.distance).num
+
+    return total_distance
+
 def get_distance_stats(activities):
     total_distance = 0
     run_distance = 0
     cycle_distance = 0
     hike_distance = 0
 
-    activities_since_start = []
     for activity in activities:
         dt = datetime(activity.start_date.year,
                       activity.start_date.month,
                       activity.start_date.day)
         if dt > RACE_START:
-            activities_since_start.append(activity)
             total_distance += unithelper.kilometer(activity.distance).num
             if activity.type == "Run":
                 run_distance += unithelper.kilometer(activity.distance).num
@@ -68,22 +78,23 @@ def get_distance_stats(activities):
 
     return total_distance, run_distance, cycle_distance, hike_distance
 
+def get_client_for_user(user):
+    CLIENT_ID = config[user]["client_id"]
+    CLIENT_SECRET = config[user]["client_secret"]
+    CODE = config[user]["code"]
 
-
-
-def user(request):
     # Strava authentication
     client = Client()
 
-    with open('C:/Users/tomha/Documents/Coding Projects/Strava Race/Deployment/access_token.pickle', 'rb') as f:
+    with open(f'{settings.BASE_DIR}\\..\\..\\Deployment\\{user}_access_token.pickle', 'rb') as f:
         access_token = pickle.load(f)
 
     if time.time() > access_token['expires_at']:
         print('Token has expired, will refresh')
         refresh_response = client.refresh_access_token(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
-                                                       refresh_token=access_token["refresh_token"])
+                                                    refresh_token=access_token["refresh_token"])
         access_token = refresh_response
-        with open('C:/Users/tomha/Documents/Coding Projects/Strava Race/Deployment/access_token.pickle', 'wb') as f:
+        with open(f'{settings.BASE_DIR}\\..\\..\\Deployment\\{user}_access_token.pickle', 'wb') as f:
             pickle.dump(refresh_response, f)
         print('Refreshed token saved to file')
         client.access_token = refresh_response['access_token']
@@ -92,13 +103,48 @@ def user(request):
 
     else:
         print('Token still valid, expires at {}'
-              .format(time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime(access_token['expires_at']))))
+            .format(time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime(access_token['expires_at']))))
         client.access_token = access_token['access_token']
         client.refresh_token = access_token['refresh_token']
         client.token_expires_at = access_token['expires_at']
 
-    milestones = get_milestones()
+    return client
 
+
+def home(request):
+    rankings = []
+
+    for user in USERS:
+        client = get_client_for_user(user)
+    
+        # Get distance data
+        athlete = client.get_athlete()
+        activities = client.get_activities(limit=100)
+        total = get_total_distance(activities)
+        rankings.append((athlete.firstname, total))
+
+    print(rankings)
+    rankings = sorted(rankings, key=lambda x: x[1])
+    print(rankings)
+
+    context = {
+        "first": rankings[-1][0],
+        "second" : rankings[-2][0],
+        "third" : rankings[-3][0],
+        "first_distance" : rankings[-1][1],
+        "second_distance" : rankings[-2][1],
+        "third_distance" : rankings[-3][1]
+    }
+    return render(request, "tracker/home.html", context)
+
+
+def user(request):
+
+    user = request.GET.get("name").lower()
+    print(user)
+    milestones = get_milestones()
+    client = get_client_for_user(user)
+        
     # Get distance data
     athlete = client.get_athlete()
     activities = client.get_activities(limit=100)
@@ -121,12 +167,3 @@ def user(request):
         "progress": round(progress)
     }
     return render(request, "tracker/user.html", context)
-
-
-def home(request):
-    context = {
-        "first": "Tom",
-        "second": "Justin",
-        "third": "Ben"
-    }
-    return render(request, "tracker/home.html", context)
