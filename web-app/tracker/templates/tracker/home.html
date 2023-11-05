@@ -16,18 +16,18 @@
 
 <div class="container podium">
     <div class="podium__item">
-      <p class="podium__city">{{second}}</p>
+      <p class="podium__city"><a href="{% url 'user' %}?name={{second}}">{{second}}</a></p>
       <div class="podium__rank second">2</div>
     </div>
     <div class="podium__item">
-      <p class="podium__city"><a href="{% url 'user' %}">{{first}}</a></p>
+      <p class="podium__city"><a href="{% url 'user' %}?name={{first}}">{{first}}</a></p>
       <div class="podium__rank first">1</div>
-  </div>
+    </div>
     <div class="podium__item">
-      <p class="podium__city">{{third}}</p>
+      <p class="podium__city"><a href="{% url 'user' %}?name={{third}}">{{third}}</a></p>
       <div class="podium__rank third">3</div>
     </div>
-  </>
+</div>
 
 
 </body>
