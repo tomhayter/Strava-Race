@@ -1,5 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
+<link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
 <link rel="stylesheet" href="{% static 'tracker/common.css' %}">
 <link rel="stylesheet" href="{% static 'tracker/user.css' %}">
 <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet'>
@@ -13,7 +14,7 @@
     <p><a href="{% url 'home' %}">Race Around the World</a></p>
 </div>
 
-<div class="welcome" style="text-align: center;">
+<div class="welcome">
     <p>Welcome {{name}}!</p>
 </div>
 <div class="total">
@@ -50,6 +51,9 @@
             <p>{{next_milestone_name}} - {{next_milestone_distance}}km</p>
         </div>
     </div>
+</div>
+<div class="welcome">
+    <p><a href="{% url 'milestones' %}?name={{arg_name}}">All Milestones</a></p>
 </div>
 
 </body>
