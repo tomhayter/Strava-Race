@@ -15,15 +15,56 @@ USERS = ["tom", "ben", "justin"]
 
 RACE_START = datetime(2023, 8, 24)
 
+class Milestone:
+    def __init__(self, name, distance, date_achieved, link):
+        self.name = name
+        self.distance = distance
+        if date_achieved is None:
+            self.date_achieved = ""
+        else:
+            self.date_achieved = datetime.date(date_achieved)
+        if link is None:
+            self.link = ""
+        else: 
+            self.link = link
+
+    def dictionary(self):
+        return {"name": self.name,
+                "distance": self.distance,
+                "date_achieved": self.date_achieved,
+                "link": self.link}
+
 
 def get_milestones():
     # Get Milestones
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
-    spreadsheet1 = spreadsheet["Sheet1"]
+    spreadsheet1 = spreadsheet["Distance"]
 
     milestones = {}
-    for row in range(2, spreadsheet1.max_row):
+    for row in range(2, spreadsheet1.max_row+1):
         milestones[spreadsheet1.cell(row, 1).value] = spreadsheet1.cell(row, 2).value
+    return milestones
+
+def get_detailed_milestones(user):
+    # Get Milestones
+    spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
+    spreadsheet1 = spreadsheet["Distance"]
+
+    user_column = 3
+    if user == "ben":
+        user_column = 4
+    if user == "justin":
+        user_column = 5
+        
+
+    milestones = []
+    for row in range(3, spreadsheet1.max_row+1):
+        milestones.append(
+            Milestone(
+            spreadsheet1.cell(row, 1).value,
+            spreadsheet1.cell(row, 2).value,
+            spreadsheet1.cell(row, user_column).value,
+            spreadsheet1.cell(row, 6).value))
     return milestones
 
 
@@ -141,7 +182,6 @@ def home(request):
 def user(request):
 
     user = request.GET.get("name").lower()
-    print(user)
     milestones = get_milestones()
     client = get_client_for_user(user)
         
@@ -164,6 +204,16 @@ def user(request):
         "last_milestone_distance": closest_below[1],
         "next_milestone_name": closest_above[0],
         "next_milestone_distance": closest_above[1],
-        "progress": round(progress)
+        "progress": round(progress),
+        "arg_name": user
     }
     return render(request, "tracker/user.html", context)
+
+def milestones(request):
+    user = request.GET.get("name").lower()
+    milestones = get_detailed_milestones(user)
+    context = {
+        "milestones": [i.dictionary() for i in milestones],
+        "arg_name": user
+    }
+    return render(request, "tracker/milestones.html", context)
