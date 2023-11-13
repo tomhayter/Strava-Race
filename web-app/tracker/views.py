@@ -98,6 +98,16 @@ def get_total_distance(activities):
 
     return total_distance
 
+def get_total_altitude(activities):
+    total_altitude = 0
+    for activity in activities:
+        dt = datetime(activity.start_date.year,
+                      activity.start_date.month,
+                      activity.start_date.day)
+        if dt > RACE_START:
+            total_altitude += unithelper.meter(activity.total_elevation_gain).num
+    return total_altitude
+
 def get_distance_stats(activities):
     total_distance = 0
     run_distance = 0
@@ -189,6 +199,7 @@ def user(request):
     athlete = client.get_athlete()
     activities = client.get_activities(limit=100)
     total, run, cycle, hike = get_distance_stats(activities)
+    altitude = get_total_altitude(activities)
 
     closest_below, closest_above, completed = get_nearest_milestones(milestones, total)
 
@@ -200,6 +211,7 @@ def user(request):
         "run_distance" : round(run, 2),
         "cycle_distance" : round(cycle, 2),
         "hike_distance" : round(hike, 2),
+        "altitude": round(altitude, 1),
         "last_milestone_name" : closest_below[0],
         "last_milestone_distance": closest_below[1],
         "next_milestone_name": closest_above[0],
