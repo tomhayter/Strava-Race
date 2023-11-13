@@ -20,7 +20,9 @@
 
 <div class="content">
     <table class="table">
-        <th></th><th>Milestone</th><th>Distance</th><th>Date Achieved</th>
+        <tr style="padding-bottom: 10px; border-bottom:3px solid black">
+            <th></th><th style="text-align: left; padding-left: 50px;">Milestone</th><th>Distance (km)</th><th>Date Achieved</th>
+        </tr>
         {% for row in milestones %}
         <tr>
             {% if row.link and row.date_achieved %}
@@ -28,7 +30,9 @@
             <td><img class="icon" src="{% static image_static %}"></td>
             {% endwith %}
             {% else %}
-            <td></td>
+            {% with 'tracker/img/locked.png' as image_static %}
+            <td><img class="icon" src="{% static image_static %}"></td>
+            {% endwith %}
             {% endif %}
             <td>{{row.name}}</td>
             <td>{{row.distance}}</td>

@@ -2,3 +2,36 @@
     height: 75px;
     width: 75px;
 }
+
+td {
+    padding-left: 50px;
+    padding-right: 50px;
+    padding-bottom: 8px;
+    padding-top: 12px;
+}
+
+.back{
+    padding-left: 125px;
+}
+
+.content {
+    padding-left: 125px;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+tr { 
+    border: solid;
+    border-width: 2px 0;
+    border-color: var(--accent)
+}
+
+tr:first-child {
+    border-top: none;
+}
+
+tr:last-child {
+    border-bottom: none;
+}

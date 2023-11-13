@@ -22,12 +22,11 @@ class Milestone:
         if date_achieved is None:
             self.date_achieved = ""
         else:
-            self.date_achieved = date_achieved
+            self.date_achieved = datetime.date(date_achieved)
         if link is None:
             self.link = ""
         else: 
             self.link = link
-        print(self.link)
 
     def dictionary(self):
         return {"name": self.name,
@@ -39,17 +38,17 @@ class Milestone:
 def get_milestones():
     # Get Milestones
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
-    spreadsheet1 = spreadsheet["Sheet1"]
+    spreadsheet1 = spreadsheet["Distance"]
 
     milestones = {}
-    for row in range(2, spreadsheet1.max_row):
+    for row in range(2, spreadsheet1.max_row+1):
         milestones[spreadsheet1.cell(row, 1).value] = spreadsheet1.cell(row, 2).value
     return milestones
 
 def get_detailed_milestones(user):
     # Get Milestones
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
-    spreadsheet1 = spreadsheet["Sheet1"]
+    spreadsheet1 = spreadsheet["Distance"]
 
     user_column = 3
     if user == "ben":
@@ -59,7 +58,7 @@ def get_detailed_milestones(user):
         
 
     milestones = []
-    for row in range(3, spreadsheet1.max_row):
+    for row in range(3, spreadsheet1.max_row+1):
         milestones.append(
             Milestone(
             spreadsheet1.cell(row, 1).value,
