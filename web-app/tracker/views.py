@@ -137,7 +137,7 @@ def get_client_for_user(user):
     # Strava authentication
     client = Client()
 
-    with open(f'{settings.BASE_DIR}\\..\\..\\Deployment\\{user}_access_token.pickle', 'rb') as f:
+    with open(f'{settings.BASE_DIR}\\..\\..\\Deployment\\access_tokens\\{user}_access_token.pickle', 'rb') as f:
         access_token = pickle.load(f)
 
     if time.time() > access_token['expires_at']:
@@ -145,7 +145,7 @@ def get_client_for_user(user):
         refresh_response = client.refresh_access_token(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
                                                     refresh_token=access_token["refresh_token"])
         access_token = refresh_response
-        with open(f'{settings.BASE_DIR}\\..\\..\\Deployment\\{user}_access_token.pickle', 'wb') as f:
+        with open(f'{settings.BASE_DIR}\\..\\..\\Deployment\\access_tokens\\{user}_access_token.pickle', 'wb') as f:
             pickle.dump(refresh_response, f)
         print('Refreshed token saved to file')
         client.access_token = refresh_response['access_token']
@@ -174,9 +174,7 @@ def home(request):
         total = get_total_distance(activities)
         rankings.append((athlete.firstname, total))
 
-    print(rankings)
     rankings = sorted(rankings, key=lambda x: x[1])
-    print(rankings)
 
     context = {
         "first": rankings[-1][0],

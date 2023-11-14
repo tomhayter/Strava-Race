@@ -60,7 +60,7 @@ a::before {
     height: 1.5px;
     bottom: 0;
     left: 0;
-    background-color: var(--text);
+    background-color: var(--accent);
     transform: scaleX(0);
     transition: transform 0.3s ease;
 }
