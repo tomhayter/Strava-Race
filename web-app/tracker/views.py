@@ -317,7 +317,7 @@ def user(request):
     run = get_stats(user).run_distance
     cycle = get_stats(user).cycle_distance
     hike = get_stats(user).hike_distance
-    altitude = get_stats(user).total_altitude
+    altitude = get_stats(user).total_elevation
 
     closest_below, closest_above, completed = get_nearest_milestones(milestones, total)
 
