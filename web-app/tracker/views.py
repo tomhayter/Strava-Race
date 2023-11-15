@@ -95,6 +95,23 @@ class Milestone:
                 "date_achieved": self.date_achieved,
                 "link": self.link}
 
+def get_trophies():
+    spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
+    spreadsheet1 = spreadsheet["Trophies"]
+
+    trophies = []
+    for row in range(2, spreadsheet1.max_row+1):
+        if spreadsheet1.cell(row, 2).value is None:
+            continue
+        unit = str(spreadsheet1.cell(row, 4).value)
+        if unit == "None":
+            unit = ""
+        trophies.append({"name": spreadsheet1.cell(row, 1).value,
+                        "holder": get_athlete(spreadsheet1.cell(row, 2).value).firstname,
+                        "value": str(spreadsheet1.cell(row, 3).value) + unit
+                        })
+        
+    return trophies
 
 def get_milestones():
     # Get Milestones
@@ -168,15 +185,15 @@ def update_trophy_winners():
         if most_hikes[1] < stats.num_hikes:
             most_hikes = (user, stats.num_hikes)
         if longest_run[1] < stats.longest_run:
-            longest_run = (user, stats.longest_run)
+            longest_run = (user, round(stats.longest_run, 2))
         if longest_cycle[1] < stats.longest_cycle:
-            longest_cycle = (user, stats.longest_cycle)
+            longest_cycle = (user, round(stats.longest_cycle, 2))
         if longest_hike[1] < stats.longest_hike:
-            longest_hike = (user, stats.longest_hike)
+            longest_hike = (user, round(stats.longest_hike, 2))
         if largest_climb[1] < stats.largest_climb:
-            largest_climb = (user, stats.largest_climb)
+            largest_climb = (user, round(stats.largest_climb, 1))
         if most_climbing[1] < stats.total_elevation:
-            most_climbing = (user, stats.total_elevation)
+            most_climbing = (user, round(stats.total_elevation, 1))
         if most_time[1] < stats.total_time:
             most_time = (user, stats.total_time)
 
@@ -347,3 +364,10 @@ def milestones(request):
         "arg_name": user
     }
     return render(request, "tracker/milestones.html", context)
+
+def trophies(request):
+    trophies = get_trophies()
+    context = {
+        "trophies": trophies
+    }
+    return render(request, "tracker/trophies.html", context)
