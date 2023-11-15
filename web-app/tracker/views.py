@@ -21,8 +21,17 @@ class Statistics:
         self.run_distance = 0
         self.cycle_distance = 0
         self.hike_distance = 0
-        self.total_altitude = 0
+        self.total_elevation = 0
         self.total_time = timedelta()
+
+        self.num_activities = 0
+        self.num_runs = 0
+        self.num_cycles = 0
+        self.num_hikes = 0
+        self.longest_run = 0
+        self.longest_cycle = 0
+        self.longest_hike = 0
+        self.largest_climb = 0
 
         for activity in activities:
             dt = datetime(activity.start_date.year,
@@ -30,13 +39,21 @@ class Statistics:
                         activity.start_date.day)
             if dt > RACE_START:
                 self.total_distance += unithelper.kilometer(activity.distance).num
-                self.total_altitude += unithelper.meter(activity.total_elevation_gain).num
+                self.total_elevation += unithelper.meter(activity.total_elevation_gain).num
+                self.largest_climb = max(self.largest_climb, unithelper.meter(activity.total_elevation_gain).num)
                 self.total_time += activity.moving_time
+                self.num_activities += 1
                 if activity.type == "Run":
+                    self.num_runs += 1
+                    self.longest_run = max(self.longest_run, unithelper.kilometer(activity.distance).num)
                     self.run_distance += unithelper.kilometer(activity.distance).num
                 elif activity.type == "Ride":
+                    self.num_cycles += 1
+                    self.longest_cycle = max(self.longest_cycle, unithelper.kilometer(activity.distance).num)
                     self.cycle_distance += unithelper.kilometer(activity.distance).num
                 elif activity.type == "Hike" or activity.type == "Walk":
+                    self.num_hikes += 1
+                    self.longest_hike = max(self.longest_hike, unithelper.kilometer(activity.distance).num)
                     self.hike_distance += unithelper.kilometer(activity.distance).num
 
 
@@ -44,7 +61,8 @@ class User:
     def __init__(self, user):
         self.client = get_client_for_user(user)
         self.name = self.client.get_athlete()
-        self.activities = self.client.get_activities(limit=100)
+        self.activities = list(self.client.get_activities(limit=100, after="2023-08-24T00:00:00Z"))
+        self.activities = sorted(self.activities, key=lambda x: x.start_date)
         self.stats = Statistics(self.activities)
 
 
@@ -128,6 +146,91 @@ def get_nearest_milestones(milestones, total_distance):
 
     return closest_below, closest_above, completed
 
+def update_trophy_winners():
+    most_activities = (None, 0)
+    most_runs = (None, 0)
+    most_cycles = (None, 0)
+    most_hikes = (None, 0)
+    longest_run = (None, 0)
+    longest_cycle = (None, 0)
+    longest_hike = (None, 0)
+    largest_climb = (None, 0)
+    most_climbing = (None, 0)
+    most_time = (None, timedelta())
+    for user in USERS:
+        stats = get_stats(user)
+        if most_activities[1] < stats.num_activities:
+            most_activities = (user, stats.num_activities)
+        if most_runs[1] < stats.num_runs:
+            most_runs = (user, stats.num_runs)
+        if most_cycles[1] < stats.num_cycles:
+            most_cycles = (user, stats.num_cycles)
+        if most_hikes[1] < stats.num_hikes:
+            most_hikes = (user, stats.num_hikes)
+        if longest_run[1] < stats.longest_run:
+            longest_run = (user, stats.longest_run)
+        if longest_cycle[1] < stats.longest_cycle:
+            longest_cycle = (user, stats.longest_cycle)
+        if longest_hike[1] < stats.longest_hike:
+            longest_hike = (user, stats.longest_hike)
+        if largest_climb[1] < stats.largest_climb:
+            largest_climb = (user, stats.largest_climb)
+        if most_climbing[1] < stats.total_elevation:
+            most_climbing = (user, stats.total_elevation)
+        if most_time[1] < stats.total_time:
+            most_time = (user, stats.total_time)
+
+    spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
+    trophy_sheet = spreadsheet["Trophies"]
+    trophy_sheet["B2"] = most_climbing[0]
+    trophy_sheet["C2"] = most_climbing[1]
+    trophy_sheet["B3"] = longest_run[0]
+    trophy_sheet["C3"] = longest_run[1]
+    trophy_sheet["B4"] = longest_cycle[0]
+    trophy_sheet["C4"] = longest_cycle[1]
+    trophy_sheet["B5"] = longest_hike[0]
+    trophy_sheet["C5"] = longest_hike[1]
+    trophy_sheet["B6"] = largest_climb[0]
+    trophy_sheet["C6"] = largest_climb[1]
+    trophy_sheet["B7"] = most_activities[0]
+    trophy_sheet["C7"] = most_activities[1]
+    trophy_sheet["B8"] = most_time[0]
+    trophy_sheet["C8"] = most_time[1]
+    trophy_sheet["B9"] = most_runs[0]
+    trophy_sheet["C9"] = most_runs[1]
+    trophy_sheet["B10"] = most_cycles[0]
+    trophy_sheet["C10"] = most_cycles[1]
+    trophy_sheet["B11"] = most_hikes[0]
+    trophy_sheet["C11"] = most_hikes[1]
+
+    spreadsheet.save(filename=f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
+    
+def update_milestones():
+    spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
+    spreadsheet1 = spreadsheet["Distance"]
+    for user in USERS:
+        user_column = 3
+        if user == "ben":
+            user_column = 4
+        if user == "justin":
+            user_column = 5
+        activities = get_activities(user)
+        total = get_stats(user).total_distance
+        for row in range(3, spreadsheet1.max_row+1):
+            distance = spreadsheet1.cell(row, 2).value
+            if distance > total:
+                break
+            running_total = 0
+            for activity in activities:
+                running_total += unithelper.kilometer(activity.distance).num
+                if running_total > distance:
+                    spreadsheet1.cell(row, user_column).value = datetime(activity.start_date.year,
+                                                                         activity.start_date.month,
+                                                                         activity.start_date.day)
+                    break
+    
+    spreadsheet.save(filename=f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
+
 def get_client_for_user(user):
     CLIENT_ID = config[user]["client_id"]
     CLIENT_SECRET = config[user]["client_secret"]
@@ -172,12 +275,12 @@ def get_activities(user):
         CACHE.add_user(user)
     return CACHE.users[user].activities
 
-
 def get_athlete(user):
     if user not in CACHE.users:
         print("called cache")
         CACHE.add_user(user)
     return CACHE.users[user].name
+
 
 def home(request):
     rankings = []
@@ -190,6 +293,9 @@ def home(request):
 
     rankings = sorted(rankings, key=lambda x: x[1])
 
+    update_milestones()
+    update_trophy_winners()
+
     context = {
         "first": rankings[-1][0],
         "second" : rankings[-2][0],
@@ -199,7 +305,6 @@ def home(request):
         "third_distance" : rankings[-3][1]
     }
     return render(request, "tracker/home.html", context)
-
 
 def user(request):
 
