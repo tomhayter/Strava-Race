@@ -15,6 +15,47 @@ USERS = ["tom", "ben", "justin"]
 
 RACE_START = datetime(2023, 8, 24)
 
+class Statistics:
+    def __init__(self, activities):
+        self.total_distance = 0
+        self.run_distance = 0
+        self.cycle_distance = 0
+        self.hike_distance = 0
+        self.total_altitude = 0
+
+        for activity in activities:
+            dt = datetime(activity.start_date.year,
+                        activity.start_date.month,
+                        activity.start_date.day)
+            if dt > RACE_START:
+                self.total_distance += unithelper.kilometer(activity.distance).num
+                self.total_altitude += unithelper.meter(activity.total_elevation_gain).num
+                if activity.type == "Run":
+                    self.run_distance += unithelper.kilometer(activity.distance).num
+                elif activity.type == "Ride":
+                    self.cycle_distance += unithelper.kilometer(activity.distance).num
+                elif activity.type == "Hike" or activity.type == "Walk":
+                    self.hike_distance += unithelper.kilometer(activity.distance).num
+
+
+class User:
+    def __init__(self, user):
+        self.client = get_client_for_user(user)
+        self.name = self.client.get_athlete()
+        self.activities = self.client.get_activities(limit=100)
+        self.stats = Statistics(self.activities)
+
+
+class Cache:
+    def __init__(self):
+        self.updated = datetime.now()
+        self.users = {}
+
+    def add_user(self, user):
+        self.users[user] = User(user)
+
+CACHE = Cache()
+
 class Milestone:
     def __init__(self, name, distance, date_achieved, link):
         self.name = name
@@ -85,50 +126,6 @@ def get_nearest_milestones(milestones, total_distance):
 
     return closest_below, closest_above, completed
 
-
-def get_total_distance(activities):
-    total_distance = 0
-
-    for activity in activities:
-        dt = datetime(activity.start_date.year,
-                      activity.start_date.month,
-                      activity.start_date.day)
-        if dt > RACE_START:
-            total_distance += unithelper.kilometer(activity.distance).num
-
-    return total_distance
-
-def get_total_altitude(activities):
-    total_altitude = 0
-    for activity in activities:
-        dt = datetime(activity.start_date.year,
-                      activity.start_date.month,
-                      activity.start_date.day)
-        if dt > RACE_START:
-            total_altitude += unithelper.meter(activity.total_elevation_gain).num
-    return total_altitude
-
-def get_distance_stats(activities):
-    total_distance = 0
-    run_distance = 0
-    cycle_distance = 0
-    hike_distance = 0
-
-    for activity in activities:
-        dt = datetime(activity.start_date.year,
-                      activity.start_date.month,
-                      activity.start_date.day)
-        if dt > RACE_START:
-            total_distance += unithelper.kilometer(activity.distance).num
-            if activity.type == "Run":
-                run_distance += unithelper.kilometer(activity.distance).num
-            elif activity.type == "Ride":
-                cycle_distance += unithelper.kilometer(activity.distance).num
-            elif activity.type == "Hike" or activity.type == "Walk":
-                hike_distance += unithelper.kilometer(activity.distance).num
-
-    return total_distance, run_distance, cycle_distance, hike_distance
-
 def get_client_for_user(user):
     CLIENT_ID = config[user]["client_id"]
     CLIENT_SECRET = config[user]["client_secret"]
@@ -161,17 +158,32 @@ def get_client_for_user(user):
 
     return client
 
+def get_stats(user):
+    if user not in CACHE.users:
+        print("called cache")
+        CACHE.add_user(user)
+    return CACHE.users[user].stats
+
+def get_activities(user):
+    if user not in CACHE.users:
+        print("called cache")
+        CACHE.add_user(user)
+    return CACHE.users[user].activities
+
+
+def get_athlete(user):
+    if user not in CACHE.users:
+        print("called cache")
+        CACHE.add_user(user)
+    return CACHE.users[user].name
 
 def home(request):
     rankings = []
 
     for user in USERS:
-        client = get_client_for_user(user)
-    
         # Get distance data
-        athlete = client.get_athlete()
-        activities = client.get_activities(limit=100)
-        total = get_total_distance(activities)
+        athlete = get_athlete(user)
+        total = get_stats(user).total_distance
         rankings.append((athlete.firstname, total))
 
     rankings = sorted(rankings, key=lambda x: x[1])
@@ -191,13 +203,14 @@ def user(request):
 
     user = request.GET.get("name").lower()
     milestones = get_milestones()
-    client = get_client_for_user(user)
-        
+
     # Get distance data
-    athlete = client.get_athlete()
-    activities = client.get_activities(limit=100)
-    total, run, cycle, hike = get_distance_stats(activities)
-    altitude = get_total_altitude(activities)
+    athlete = get_athlete(user)
+    total = get_stats(user).total_distance
+    run = get_stats(user).run_distance
+    cycle = get_stats(user).cycle_distance
+    hike = get_stats(user).hike_distance
+    altitude = get_stats(user).total_altitude
 
     closest_below, closest_above, completed = get_nearest_milestones(milestones, total)
 
