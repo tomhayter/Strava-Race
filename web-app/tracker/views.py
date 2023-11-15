@@ -3,8 +3,8 @@ from django.conf import settings
 from stravalib.client import Client
 from stravalib import unithelper
 import pickle
-import time
-from datetime import datetime
+import time as t
+from datetime import datetime, timedelta
 import yaml
 import openpyxl
 
@@ -22,6 +22,7 @@ class Statistics:
         self.cycle_distance = 0
         self.hike_distance = 0
         self.total_altitude = 0
+        self.total_time = timedelta()
 
         for activity in activities:
             dt = datetime(activity.start_date.year,
@@ -30,6 +31,7 @@ class Statistics:
             if dt > RACE_START:
                 self.total_distance += unithelper.kilometer(activity.distance).num
                 self.total_altitude += unithelper.meter(activity.total_elevation_gain).num
+                self.total_time += activity.moving_time
                 if activity.type == "Run":
                     self.run_distance += unithelper.kilometer(activity.distance).num
                 elif activity.type == "Ride":
@@ -137,7 +139,7 @@ def get_client_for_user(user):
     with open(f'{settings.BASE_DIR}\\..\\..\\Deployment\\access_tokens\\{user}_access_token.pickle', 'rb') as f:
         access_token = pickle.load(f)
 
-    if time.time() > access_token['expires_at']:
+    if t.time() > access_token['expires_at']:
         print('Token has expired, will refresh')
         refresh_response = client.refresh_access_token(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
                                                     refresh_token=access_token["refresh_token"])
@@ -151,7 +153,7 @@ def get_client_for_user(user):
 
     else:
         print('Token still valid, expires at {}'
-            .format(time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime(access_token['expires_at']))))
+            .format(t.strftime("%a, %d %b %Y %H:%M:%S %Z", t.localtime(access_token['expires_at']))))
         client.access_token = access_token['access_token']
         client.refresh_token = access_token['refresh_token']
         client.token_expires_at = access_token['expires_at']
