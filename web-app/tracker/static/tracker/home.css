@@ -42,8 +42,14 @@
     background: var(--primary);
 }
 
+.cumulative-distance {
+    text-align: center;
+    margin-bottom: 40px;
+    margin-top: 40px;
+}
+
 .trophy-button {
     text-align: center;
     margin-bottom: 40px;
-    margin-top: 100px;
+    margin-top: 40px;
 }

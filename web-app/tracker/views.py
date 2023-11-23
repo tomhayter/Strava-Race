@@ -302,11 +302,13 @@ def get_athlete(user):
 def home(request):
     rankings = []
 
+    cumulative = 0
     for user in USERS:
         # Get distance data
         athlete = get_athlete(user)
         total = get_stats(user).total_distance
         rankings.append((athlete.firstname, total))
+        cumulative += total
 
     rankings = sorted(rankings, key=lambda x: x[1])
 
@@ -317,9 +319,10 @@ def home(request):
         "first": rankings[-1][0],
         "second" : rankings[-2][0],
         "third" : rankings[-3][0],
-        "first_distance" : rankings[-1][1],
-        "second_distance" : rankings[-2][1],
-        "third_distance" : rankings[-3][1]
+        "first_distance" : round(rankings[-1][1]),
+        "second_distance" : round(rankings[-2][1]),
+        "third_distance" : round(rankings[-3][1]),
+        "cumulative_distance" : round(cumulative)
     }
     return render(request, "tracker/home.html", context)
 

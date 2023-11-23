@@ -18,20 +18,24 @@
 <div class="container podium">
     <div class="podium__item">
       <p class="podium__city"><a href="{% url 'user' %}?name={{second}}">{{second}}</a></p>
-      <div class="podium__rank second">2</div>
+      <div class="podium__rank second">{{second_distance}}km</div>
     </div>
     <div class="podium__item">
       <p class="podium__city"><a href="{% url 'user' %}?name={{first}}">{{first}}</a></p>
-      <div class="podium__rank first">1</div>
+      <div class="podium__rank first">{{first_distance}}km</div>
     </div>
     <div class="podium__item">
       <p class="podium__city"><a href="{% url 'user' %}?name={{third}}">{{third}}</a></p>
-      <div class="podium__rank third">3</div>
+      <div class="podium__rank third">{{third_distance}}km</div>
     </div>
 </div>
 
+<div class="cumulative-distance">
+  <p>Cumulative Distance: {{cumulative_distance}}km</p>
+</div>
+
 <div class="trophy-button">
-  <p><a href="{% url 'trophies' %}">See Trophies</a></p>
+  <p><a href="{% url 'trophies' %}">See Trophies ></a></p>
 </div>
 
 </body>
