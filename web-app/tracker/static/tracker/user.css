@@ -1,3 +1,24 @@
+.centre {
+  width: 50%;
+  float: left;
+}
+
+.trophies {
+  width: 25%;
+  float: left;
+  box-sizing: border-box;
+  padding-left: 40px;
+  padding-right: 20px;
+}
+
+.milestones {
+  width: 25%;
+  float: right;
+  box-sizing: border-box;
+  padding-left: 20px;
+  padding-right: 40px;
+}
+
 .welcome {
   text-align: center;
   margin-bottom: 40px;
@@ -80,4 +101,24 @@
 .next-milestone {
   text-align: right;
   margin-left: auto;
+}
+
+.trophy-title {
+  padding-left: 60px;
+}
+
+.trophy-icon {
+  width: 50px;
+  height: 50px;
+  vertical-align: middle;
+  padding-right: 10px;
+}
+
+.milestone-icon {
+  width: 100px;
+  height: 100px;
+}
+
+.milestones-link {
+  padding-top: 20px;
 }

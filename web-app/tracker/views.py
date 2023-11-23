@@ -145,7 +145,6 @@ def get_detailed_milestones(user):
             spreadsheet1.cell(row, 6).value))
     return milestones
 
-
 def get_nearest_milestones(milestones, total_distance):
     # Get closest and completed milestones
     closest_below = (None, -1)
@@ -333,13 +332,28 @@ def user(request):
 
     # Get distance data
     athlete = get_athlete(user)
-    total = get_stats(user).total_distance
-    run = get_stats(user).run_distance
-    cycle = get_stats(user).cycle_distance
-    hike = get_stats(user).hike_distance
-    altitude = get_stats(user).total_elevation
+    stats = get_stats(user)
+    total = stats.total_distance
+    run = stats.run_distance
+    cycle = stats.cycle_distance
+    hike = stats.hike_distance
+    altitude = stats.total_elevation
+
+    trophies = get_trophies()
+    my_trophies = []
+    for trophy in trophies:
+        if trophy["holder"].lower() == user:
+            my_trophies.append(trophy)
+    
 
     closest_below, closest_above, completed = get_nearest_milestones(milestones, total)
+    detailed_milestones = get_detailed_milestones(user)
+    completed2 = [m[0] for m in completed]
+    my_milestones = []
+    for m in detailed_milestones:
+        if m.name in completed2:
+            my_milestones.append(m)
+
 
     progress = 100 * (total - closest_below[1])/(closest_above[1] - closest_below[1])
 
@@ -355,6 +369,8 @@ def user(request):
         "next_milestone_name": closest_above[0],
         "next_milestone_distance": closest_above[1],
         "progress": round(progress),
+        "trophies" : my_trophies,
+        "completed_milestones": my_milestones,
         "arg_name": user
     }
     return render(request, "tracker/user.html", context)
