@@ -32,6 +32,7 @@ class Statistics:
         self.longest_cycle = 0
         self.longest_hike = 0
         self.largest_climb = 0
+        self.highest_point = 0
 
         for activity in activities:
             dt = datetime(activity.start_date.year,
@@ -43,6 +44,7 @@ class Statistics:
                 self.largest_climb = max(self.largest_climb, unithelper.meter(activity.total_elevation_gain).num)
                 self.total_time += activity.moving_time
                 self.num_activities += 1
+                self.highest_point = max(self.highest_point, activity.elev_high)
                 if activity.type == "Run":
                     self.num_runs += 1
                     self.longest_run = max(self.longest_run, unithelper.kilometer(activity.distance).num)
@@ -173,6 +175,7 @@ def update_trophy_winners():
     largest_climb = (None, 0)
     most_climbing = (None, 0)
     most_time = (None, timedelta())
+    highest_point = (None, 0)
     for user in USERS:
         stats = get_stats(user)
         if most_activities[1] < stats.num_activities:
@@ -190,34 +193,27 @@ def update_trophy_winners():
         if longest_hike[1] < stats.longest_hike:
             longest_hike = (user, round(stats.longest_hike, 2))
         if largest_climb[1] < stats.largest_climb:
-            largest_climb = (user, round(stats.largest_climb, 1))
+            largest_climb = (user, round(stats.largest_climb))
         if most_climbing[1] < stats.total_elevation:
-            most_climbing = (user, round(stats.total_elevation, 1))
+            most_climbing = (user, round(stats.total_elevation))
         if most_time[1] < stats.total_time:
             most_time = (user, stats.total_time)
+        if highest_point[1] < stats.highest_point:
+            highest_point = (user, round(stats.highest_point))
 
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
     trophy_sheet = spreadsheet["Trophies"]
-    trophy_sheet["B2"] = most_climbing[0]
-    trophy_sheet["C2"] = most_climbing[1]
-    trophy_sheet["B3"] = longest_run[0]
-    trophy_sheet["C3"] = longest_run[1]
-    trophy_sheet["B4"] = longest_cycle[0]
-    trophy_sheet["C4"] = longest_cycle[1]
-    trophy_sheet["B5"] = longest_hike[0]
-    trophy_sheet["C5"] = longest_hike[1]
-    trophy_sheet["B6"] = largest_climb[0]
-    trophy_sheet["C6"] = largest_climb[1]
-    trophy_sheet["B7"] = most_activities[0]
-    trophy_sheet["C7"] = most_activities[1]
-    trophy_sheet["B8"] = most_time[0]
-    trophy_sheet["C8"] = most_time[1]
-    trophy_sheet["B9"] = most_runs[0]
-    trophy_sheet["C9"] = most_runs[1]
-    trophy_sheet["B10"] = most_cycles[0]
-    trophy_sheet["C10"] = most_cycles[1]
-    trophy_sheet["B11"] = most_hikes[0]
-    trophy_sheet["C11"] = most_hikes[1]
+    trophy_sheet["B2"], trophy_sheet["C2"] = most_climbing
+    trophy_sheet["B3"], trophy_sheet["C3"] = longest_run
+    trophy_sheet["B4"], trophy_sheet["C4"] = longest_cycle
+    trophy_sheet["B5"], trophy_sheet["C5"] = longest_hike
+    trophy_sheet["B6"], trophy_sheet["C6"] = largest_climb
+    trophy_sheet["B7"], trophy_sheet["C7"] = most_activities
+    trophy_sheet["B8"], trophy_sheet["C8"] = most_time
+    trophy_sheet["B9"],  trophy_sheet["C9"] = most_runs
+    trophy_sheet["B10"], trophy_sheet["C10"] = most_cycles
+    trophy_sheet["B11"], trophy_sheet["C11"] = most_hikes
+    trophy_sheet["B21"], trophy_sheet["C21"] = highest_point
 
     spreadsheet.save(filename=f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
     
