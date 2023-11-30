@@ -25,6 +25,9 @@
             <p><img class="trophy-icon" src="{% static image_static %}">{{trophy.name}}</p>
         {% endwith %}
     {% endfor %}
+    <div class="trophies-link">
+        <p><a href="{% url 'trophies' %}">All Trophies ></a></p>
+    </div>
     </div>
     <div class="centre">
         <div class="total">

@@ -120,13 +120,17 @@
   padding-right: 10px;
 }
 
+.trophies-link {
+  padding-left: 60px;
+}
+
 .milestone-icon {
   width: 100px;
   height: 100px;
 }
 
 .milestones-link {
-  padding-top: 20px;
+  padding-top: 10px;
 }
 
 .tooltip {
@@ -137,7 +141,7 @@
 .tooltip .tooltip-text {
   visibility: hidden;
   width: 120px;
-  background-color: var(--secondary);
+  background-color: var(--accent);
   color: var(--background);
   font-size: 16px;
   text-align: center;
@@ -165,6 +169,6 @@
   margin-left: -15px;
   border-width: 10px;
   border-style: solid;
-  border-color: transparent transparent var(--secondary) transparent;
+  border-color: transparent transparent var(--accent) transparent;
 }
 
