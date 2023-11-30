@@ -25,6 +25,9 @@
             <p><img class="trophy-icon" src="{% static image_static %}">{{trophy.name}}</p>
         {% endwith %}
     {% endfor %}
+    <div class="trophies-link">
+        <p><a href="{% url 'trophies' %}">All Trophies ></a></p>
+    </div>
     </div>
     <div class="centre">
         <div class="total">
@@ -72,7 +75,10 @@
         <p>Milestones:</p>
         {% for m in completed_milestones %}
             {% with 'tracker/img/'|add:m.link as image_static %}
+            <div class="tooltip">
                 <img class="milestone-icon" src="{% static image_static %}">
+                <span class="tooltip-text">{{m.name}} - {{m.distance}}km</span>
+            </div>
             {% endwith %}
         {% endfor %}
         </div>

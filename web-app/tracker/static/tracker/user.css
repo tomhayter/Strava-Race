@@ -1,22 +1,28 @@
 .centre {
   width: 50%;
   float: left;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .trophies {
-  width: 25%;
+  width: 24%;
   float: left;
   box-sizing: border-box;
-  padding-left: 40px;
-  padding-right: 20px;
+  padding-left: 30px;
+  padding-right: 10px;
+  border-radius: 0 10px 10px 0;
+  background-color: rgba(130, 212, 133, 0.25);
 }
 
 .milestones {
-  width: 25%;
+  width: 24%;
   float: right;
   box-sizing: border-box;
   padding-left: 20px;
-  padding-right: 40px;
+  padding-right: 30px;
+  border-radius: 10px 0 0 10px;
+  background-color: rgba(130, 212, 133, 0.25);
 }
 
 .welcome {
@@ -68,7 +74,7 @@
 
 .progress-bar {
   height: 10px;
-  background: var(--secondary)
+  background: var(--primary)
 }
 
 .milestone-markers {
@@ -83,7 +89,7 @@
 }
 
 .next-milestone-marker {
-  background: var(--secondary);
+  background: var(--primary);
   width: 2px;
   height: 8px;
   margin-left: auto;
@@ -114,11 +120,55 @@
   padding-right: 10px;
 }
 
+.trophies-link {
+  padding-left: 60px;
+}
+
 .milestone-icon {
   width: 100px;
   height: 100px;
 }
 
 .milestones-link {
-  padding-top: 20px;
+  padding-top: 10px;
 }
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltip-text {
+  visibility: hidden;
+  width: 120px;
+  background-color: var(--accent);
+  color: var(--background);
+  font-size: 16px;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  left: 50%;
+  margin-left: -60px;
+  margin-top: 8px;
+}
+
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+}
+
+.tooltip .tooltip-text::after {
+  content: " ";
+  position: absolute;
+  bottom: 100%;  /* At the top of the tooltip */
+  left: 50%;
+  margin-left: -15px;
+  border-width: 10px;
+  border-style: solid;
+  border-color: transparent transparent var(--accent) transparent;
+}
+
