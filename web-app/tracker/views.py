@@ -23,6 +23,7 @@ class Statistics:
         self.hike_distance = 0
         self.total_elevation = 0
         self.total_time = timedelta()
+        self.countries = set()
 
         self.num_activities = 0
         self.num_runs = 0
@@ -45,6 +46,7 @@ class Statistics:
                 self.total_time += activity.moving_time
                 self.num_activities += 1
                 self.highest_point = max(self.highest_point, activity.elev_high)
+                self.countries.add(activity.location_country)
                 if activity.type == "Run":
                     self.num_runs += 1
                     self.longest_run = max(self.longest_run, unithelper.kilometer(activity.distance).num)
@@ -176,6 +178,7 @@ def update_trophy_winners():
     most_climbing = (None, 0)
     most_time = (None, timedelta())
     highest_point = (None, 0)
+    most_countries = (None, 0)
     for user in USERS:
         stats = get_stats(user)
         if most_activities[1] < stats.num_activities:
@@ -200,6 +203,8 @@ def update_trophy_winners():
             most_time = (user, stats.total_time)
         if highest_point[1] < stats.highest_point:
             highest_point = (user, round(stats.highest_point))
+        if most_countries[1] <= len(stats.countries):
+            most_countries = (user, len(stats.countries))
 
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
     trophy_sheet = spreadsheet["Trophies"]
@@ -213,6 +218,7 @@ def update_trophy_winners():
     trophy_sheet["B9"],  trophy_sheet["C9"] = most_runs
     trophy_sheet["B10"], trophy_sheet["C10"] = most_cycles
     trophy_sheet["B11"], trophy_sheet["C11"] = most_hikes
+    trophy_sheet["B12"], trophy_sheet["C12"] = most_countries
     trophy_sheet["B21"], trophy_sheet["C21"] = highest_point
 
     spreadsheet.save(filename=f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
