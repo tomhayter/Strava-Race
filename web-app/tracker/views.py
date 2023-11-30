@@ -16,7 +16,7 @@ USERS = ["tom", "ben", "justin"]
 RACE_START = datetime(2023, 8, 24)
 
 class Statistics:
-    def __init__(self, activities):
+    def __init__(self, client, activities):
         self.total_distance = 0
         self.run_distance = 0
         self.cycle_distance = 0
@@ -24,6 +24,10 @@ class Statistics:
         self.total_elevation = 0
         self.total_time = timedelta()
         self.countries = set()
+        self.best_5k = timedelta.max
+        self.best_10k = timedelta.max
+        self.best_half = timedelta.max
+        # self.best_marathon = timedelta()
 
         self.num_activities = 0
         self.num_runs = 0
@@ -51,6 +55,15 @@ class Statistics:
                     self.num_runs += 1
                     self.longest_run = max(self.longest_run, unithelper.kilometer(activity.distance).num)
                     self.run_distance += unithelper.kilometer(activity.distance).num
+                    activity_with_be = client.get_activity(activity.id, True)
+                    if activity_with_be.best_efforts:
+                        for effort in activity_with_be.best_efforts:
+                            if effort.name == "5k":
+                                self.best_5k = min(self.best_5k, effort.elapsed_time)
+                            elif effort.name == "10k":
+                                self.best_10k = min(self.best_10k, effort.elapsed_time)
+                            elif effort.name == "Half-Marathon":
+                                self.best_half = min(self.best_half, effort.elapsed_time)
                 elif activity.type == "Ride":
                     self.num_cycles += 1
                     self.longest_cycle = max(self.longest_cycle, unithelper.kilometer(activity.distance).num)
@@ -67,7 +80,7 @@ class User:
         self.name = self.client.get_athlete()
         self.activities = list(self.client.get_activities(limit=100, after="2023-08-24T00:00:00Z"))
         self.activities = sorted(self.activities, key=lambda x: x.start_date)
-        self.stats = Statistics(self.activities)
+        self.stats = Statistics(self.client, self.activities)
 
 
 class Cache:
@@ -179,6 +192,9 @@ def update_trophy_winners():
     most_time = (None, timedelta())
     highest_point = (None, 0)
     most_countries = (None, 0)
+    fastest_5k = (None, timedelta.max)
+    fastest_10k = (None, timedelta.max)
+    fastest_half = (None, timedelta.max)
     for user in USERS:
         stats = get_stats(user)
         if most_activities[1] < stats.num_activities:
@@ -205,6 +221,12 @@ def update_trophy_winners():
             highest_point = (user, round(stats.highest_point))
         if most_countries[1] <= len(stats.countries):
             most_countries = (user, len(stats.countries))
+        if fastest_5k[1] > stats.best_5k:
+            fastest_5k = (user, stats.best_5k)
+        if fastest_10k[1] > stats.best_10k:
+            fastest_10k = (user, stats.best_10k)
+        if fastest_half[1] > stats.best_half:
+            fastest_half = (user, stats.best_half)
 
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
     trophy_sheet = spreadsheet["Trophies"]
@@ -219,6 +241,9 @@ def update_trophy_winners():
     trophy_sheet["B10"], trophy_sheet["C10"] = most_cycles
     trophy_sheet["B11"], trophy_sheet["C11"] = most_hikes
     trophy_sheet["B12"], trophy_sheet["C12"] = most_countries
+    trophy_sheet["B13"], trophy_sheet["C13"] = fastest_5k
+    trophy_sheet["B14"], trophy_sheet["C14"] = fastest_10k
+    trophy_sheet["B15"], trophy_sheet["C15"] = fastest_half
     trophy_sheet["B21"], trophy_sheet["C21"] = highest_point
 
     spreadsheet.save(filename=f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
