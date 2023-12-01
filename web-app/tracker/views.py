@@ -23,7 +23,6 @@ class Statistics:
         self.hike_distance = 0
         self.total_elevation = 0
         self.total_time = timedelta()
-
         self.num_activities = 0
         self.num_runs = 0
         self.num_cycles = 0
@@ -70,6 +69,7 @@ class User:
 
 class Cache:
     def __init__(self):
+        # TODO: Update cache regularly using last updated time
         self.updated = datetime.now()
         self.users = {}
 
@@ -97,7 +97,8 @@ class Milestone:
                 "date_achieved": self.date_achieved,
                 "link": self.link}
 
-def get_user_column():
+def get_user_column(user):
+    # Get the column number for a user
     if user == "tom":
         return 3
     if user == "ben":
@@ -106,6 +107,7 @@ def get_user_column():
         return 5
 
 def get_trophies():
+    # Get trophies from excel
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
     spreadsheet1 = spreadsheet["Trophies"]
 
@@ -124,7 +126,7 @@ def get_trophies():
     return trophies
 
 def get_milestones():
-    # Get Milestones
+    # Get milestones from excel with following data (milestone name, distance)
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
     spreadsheet1 = spreadsheet["Distance"]
 
@@ -134,7 +136,7 @@ def get_milestones():
     return milestones
 
 def get_detailed_milestones(user):
-    # Get Milestones
+    # Get milestones from excel with following data (milestone name, distance, link, date achieved)
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
     spreadsheet1 = spreadsheet["Distance"]
 
@@ -221,6 +223,7 @@ def update_trophy_winners():
     spreadsheet.save(filename=f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
     
 def update_milestones():
+    # Update the milestone dates achieved
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
     spreadsheet1 = spreadsheet["Distance"]
     for user in USERS:
