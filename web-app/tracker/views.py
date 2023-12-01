@@ -129,8 +129,9 @@ def get_trophies():
         unit = str(spreadsheet1.cell(row, 4).value)
         if unit == "None":
             unit = ""
+        holders = spreadsheet1.cell(row, 2).value.split(", ")
         trophies.append({"name": spreadsheet1.cell(row, 1).value,
-                        "holder": get_athlete(spreadsheet1.cell(row, 2).value).firstname,
+                        "holders": str([get_athlete(name).firstname for name in holders]).replace("'", "").replace("[", "").replace("]", ""),
                         "value": str(spreadsheet1.cell(row, 3).value) + unit
                         })
         
@@ -170,6 +171,9 @@ def get_nearest_milestones(milestones, total_distance):
 
     return closest_below, closest_above, completed
 
+def convert_tuple(tuple):
+    return (str(tuple[0]).replace("'", "").replace("[", "").replace("]", ""), tuple[1])
+
 def update_trophy_winners():
     most_activities = (None, 0)
     most_runs = (None, 0)
@@ -189,35 +193,95 @@ def update_trophy_winners():
     for user in USERS:
         stats = get_stats(user)
         if most_activities[1] < stats.num_activities:
-            most_activities = (user, stats.num_activities)
+            most_activities = ([user], stats.num_activities)
+        elif most_activities[1] == stats.num_activities:
+            most_activities[0].append(user)
+
         if most_runs[1] < stats.num_runs:
-            most_runs = (user, stats.num_runs)
+            most_runs = ([user], stats.num_runs)
+        elif most_runs[1] == stats.num_runs:
+            most_runs[0].append(user)
+
         if most_cycles[1] < stats.num_cycles:
-            most_cycles = (user, stats.num_cycles)
+            most_cycles = ([user], stats.num_cycles)
+        elif most_cycles[1] == stats.num_cycles:
+            most_cycles[0].append(user)
+
         if most_hikes[1] < stats.num_hikes:
-            most_hikes = (user, stats.num_hikes)
+            most_hikes = ([user], stats.num_hikes)
+        elif most_hikes[1] == stats.num_hikes:
+            most_hikes[0].append(user)
+
         if longest_run[1] < stats.longest_run:
-            longest_run = (user, round(stats.longest_run, 2))
+            longest_run = ([user], round(stats.longest_run, 2))
+        elif longest_run[1] == stats.longest_run:
+            longest_run[0].append(user)
+
         if longest_cycle[1] < stats.longest_cycle:
-            longest_cycle = (user, round(stats.longest_cycle, 2))
+            longest_cycle = ([user], round(stats.longest_cycle, 2))
+        elif longest_cycle[1] == stats.longest_cycle:
+            longest_cycle[0].append(user)
+
         if longest_hike[1] < stats.longest_hike:
-            longest_hike = (user, round(stats.longest_hike, 2))
+            longest_hike = ([user], round(stats.longest_hike, 2))
+        elif longest_hike[1] == stats.longest_hike:
+            longest_hike[0].append(user)
+
         if largest_climb[1] < stats.largest_climb:
-            largest_climb = (user, round(stats.largest_climb))
+            largest_climb = ([user], round(stats.largest_climb))
+        elif largest_climb[1] == stats.largest_climb:
+            largest_climb[0].append(user)
+
         if most_climbing[1] < stats.total_elevation:
-            most_climbing = (user, round(stats.total_elevation))
+            most_climbing = ([user], round(stats.total_elevation))
+        elif most_climbing[1] == stats.total_elevation:
+            most_climbing[0].append(user)
+
         if most_time[1] < stats.total_time:
-            most_time = (user, stats.total_time)
+            most_time = ([user], stats.total_time)
+        elif most_time[1] == stats.total_time:
+            most_time[0].append(user)
+
         if highest_point[1] < stats.highest_point:
-            highest_point = (user, round(stats.highest_point))
-        if most_countries[1] <= len(stats.countries):
-            most_countries = (user, len(stats.countries))
+            highest_point = ([user], round(stats.highest_point))
+        elif highest_point[1] == stats.highest_point:
+            highest_point[0].append(user)
+
+        if most_countries[1] < len(stats.countries):
+            most_countries = ([user], len(stats.countries))
+        elif most_countries[1] == len(stats.countries):
+            most_countries[0].append(user)
+
         if fastest_5k[1] > stats.best_5k:
-            fastest_5k = (user, stats.best_5k)
+            fastest_5k = ([user], stats.best_5k)
+        elif fastest_5k[1] == stats.best_5k:
+            fastest_5k[0].append(user)
+
         if fastest_10k[1] > stats.best_10k:
-            fastest_10k = (user, stats.best_10k)
+            fastest_10k = ([user], stats.best_10k)
+        elif fastest_10k[1] == stats.best_10k:
+            fastest_10k[0].append(user)
+
         if fastest_half[1] > stats.best_half:
-            fastest_half = (user, stats.best_half)
+            fastest_half = ([user], stats.best_half)
+        elif fastest_half[1] == stats.best_half:
+            fastest_half[0].append(user)
+
+    most_activities = convert_tuple(most_activities)
+    most_runs = convert_tuple(most_runs)
+    most_cycles = convert_tuple(most_cycles)
+    most_hikes = convert_tuple(most_hikes)
+    longest_run = convert_tuple(longest_run)
+    longest_cycle = convert_tuple(longest_cycle)
+    longest_hike = convert_tuple(longest_hike)
+    largest_climb = convert_tuple(largest_climb)
+    most_climbing = convert_tuple(most_climbing)
+    most_time = convert_tuple(most_time)
+    highest_point = convert_tuple(highest_point)
+    most_countries = convert_tuple(most_countries)
+    fastest_5k = convert_tuple(fastest_5k)
+    fastest_10k = convert_tuple(fastest_10k)
+    fastest_half = convert_tuple(fastest_half)
 
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
     trophy_sheet = spreadsheet["Trophies"]
@@ -355,7 +419,7 @@ def user(request):
     trophies = get_trophies()
     my_trophies = []
     for trophy in trophies:
-        if trophy["holder"].lower() == user:
+        if user in trophy["holders"].lower():
             my_trophies.append(trophy)
     
 
