@@ -97,6 +97,14 @@ class Milestone:
                 "date_achieved": self.date_achieved,
                 "link": self.link}
 
+def get_user_column():
+    if user == "tom":
+        return 3
+    if user == "ben":
+        return 4
+    if user == "justin":
+        return 5
+
 def get_trophies():
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
     spreadsheet1 = spreadsheet["Trophies"]
@@ -130,12 +138,7 @@ def get_detailed_milestones(user):
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
     spreadsheet1 = spreadsheet["Distance"]
 
-    user_column = 3
-    if user == "ben":
-        user_column = 4
-    if user == "justin":
-        user_column = 5
-        
+    user_column = get_user_column(user)
 
     milestones = []
     for row in range(3, spreadsheet1.max_row+1):
@@ -221,11 +224,7 @@ def update_milestones():
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\..\\Deployment\\Running Milestones.xlsx")
     spreadsheet1 = spreadsheet["Distance"]
     for user in USERS:
-        user_column = 3
-        if user == "ben":
-            user_column = 4
-        if user == "justin":
-            user_column = 5
+        user_column = get_user_column(user)
         activities = get_activities(user)
         total = get_stats(user).total_distance
         for row in range(3, spreadsheet1.max_row+1):
