@@ -30,9 +30,6 @@ class Statistics:
         # self.best_marathon = timedelta()
 
         self.num_activities = 0
-        self.num_runs = 0
-        self.num_cycles = 0
-        self.num_hikes = 0
         self.longest_run = 0
         self.longest_cycle = 0
         self.longest_hike = 0
@@ -53,7 +50,6 @@ class Statistics:
             self.highest_point = max(self.highest_point, activity.elev_high)
             self.countries.add(activity.location_country)
             if activity.type == "Run":
-                self.num_runs += 1
                 self.longest_run = max(self.longest_run, unithelper.kilometer(activity.distance).num)
                 self.run_distance += unithelper.kilometer(activity.distance).num
                 activity_with_be = client.get_activity(activity.id, True)
@@ -66,11 +62,9 @@ class Statistics:
                         elif effort.name == "Half-Marathon":
                             self.best_half = min(self.best_half, effort.elapsed_time)
             elif activity.type == "Ride":
-                self.num_cycles += 1
                 self.longest_cycle = max(self.longest_cycle, unithelper.kilometer(activity.distance).num)
                 self.cycle_distance += unithelper.kilometer(activity.distance).num
             elif activity.type == "Hike" or activity.type == "Walk":
-                self.num_hikes += 1
                 self.longest_hike = max(self.longest_hike, unithelper.kilometer(activity.distance).num)
                 self.hike_distance += unithelper.kilometer(activity.distance).num
                 
@@ -176,9 +170,9 @@ def convert_tuple(tuple):
 
 def update_trophy_winners():
     most_activities = (None, 0)
-    most_runs = (None, 0)
-    most_cycles = (None, 0)
-    most_hikes = (None, 0)
+    most_running = (None, 0)
+    most_cycling = (None, 0)
+    most_hiking = (None, 0)
     longest_run = (None, 0)
     longest_cycle = (None, 0)
     longest_hike = (None, 0)
@@ -197,20 +191,20 @@ def update_trophy_winners():
         elif most_activities[1] == stats.num_activities:
             most_activities[0].append(user)
 
-        if most_runs[1] < stats.num_runs:
-            most_runs = ([user], stats.num_runs)
-        elif most_runs[1] == stats.num_runs:
-            most_runs[0].append(user)
+        if most_running[1] < stats.run_distance:
+            most_running = ([user], round(stats.run_distance, 2))
+        elif most_running[1] == stats.run_distance:
+            most_running[0].append(user)
 
-        if most_cycles[1] < stats.num_cycles:
-            most_cycles = ([user], stats.num_cycles)
-        elif most_cycles[1] == stats.num_cycles:
-            most_cycles[0].append(user)
+        if most_cycling[1] < stats.cycle_distance:
+            most_cycling = ([user], round(stats.cycle_distance, 2))
+        elif most_cycling[1] == stats.cycle_distance:
+            most_cycling[0].append(user)
 
-        if most_hikes[1] < stats.num_hikes:
-            most_hikes = ([user], stats.num_hikes)
-        elif most_hikes[1] == stats.num_hikes:
-            most_hikes[0].append(user)
+        if most_hiking[1] < stats.hike_distance:
+            most_hiking = ([user], round(stats.hike_distance, 2))
+        elif most_hiking[1] == stats.hike_distance:
+            most_hiking[0].append(user)
 
         if longest_run[1] < stats.longest_run:
             longest_run = ([user], round(stats.longest_run, 2))
@@ -268,9 +262,9 @@ def update_trophy_winners():
             fastest_half[0].append(user)
 
     most_activities = convert_tuple(most_activities)
-    most_runs = convert_tuple(most_runs)
-    most_cycles = convert_tuple(most_cycles)
-    most_hikes = convert_tuple(most_hikes)
+    most_running = convert_tuple(most_running)
+    most_cycling = convert_tuple(most_cycling)
+    most_hiking = convert_tuple(most_hiking)
     longest_run = convert_tuple(longest_run)
     longest_cycle = convert_tuple(longest_cycle)
     longest_hike = convert_tuple(longest_hike)
@@ -292,14 +286,14 @@ def update_trophy_winners():
     trophy_sheet["B6"], trophy_sheet["C6"] = largest_climb
     trophy_sheet["B7"], trophy_sheet["C7"] = most_activities
     trophy_sheet["B8"], trophy_sheet["C8"] = most_time
-    trophy_sheet["B9"],  trophy_sheet["C9"] = most_runs
-    trophy_sheet["B10"], trophy_sheet["C10"] = most_cycles
-    trophy_sheet["B11"], trophy_sheet["C11"] = most_hikes
+    trophy_sheet["B9"],  trophy_sheet["C9"] = most_running
+    trophy_sheet["B10"], trophy_sheet["C10"] = most_cycling
+    trophy_sheet["B11"], trophy_sheet["C11"] = most_hiking
     trophy_sheet["B12"], trophy_sheet["C12"] = most_countries
     trophy_sheet["B13"], trophy_sheet["C13"] = fastest_5k
     trophy_sheet["B14"], trophy_sheet["C14"] = fastest_10k
     trophy_sheet["B15"], trophy_sheet["C15"] = fastest_half
-    trophy_sheet["B21"], trophy_sheet["C21"] = highest_point
+    trophy_sheet["B17"], trophy_sheet["C17"] = highest_point
 
     spreadsheet.save(filename=f"{settings.BASE_DIR}\\..\\Deployment\\Running Milestones.xlsx")
     
