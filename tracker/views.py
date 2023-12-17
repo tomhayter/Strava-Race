@@ -131,6 +131,23 @@ def get_trophies():
         
     return trophies
 
+def get_altitude_milestones(user):
+    # Get milestones from excel with following data (milestone name, distance, link, date achieved)
+    spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\Deployment\\Running Milestones.xlsx")
+    spreadsheet1 = spreadsheet["Altitude"]
+
+    user_column = get_user_column(user)
+
+    milestones = []
+    for row in range(3, spreadsheet1.max_row+1):
+        milestones.append(
+            Milestone(
+            spreadsheet1.cell(row, 1).value,
+            spreadsheet1.cell(row, 2).value,
+            spreadsheet1.cell(row, user_column).value,
+            spreadsheet1.cell(row, 6).value))
+    return milestones
+
 def get_milestones(user):
     # Get milestones from excel with following data (milestone name, distance, link, date achieved)
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\Deployment\\Running Milestones.xlsx")
@@ -452,3 +469,12 @@ def trophies(request):
         "trophies": trophies
     }
     return render(request, "tracker/trophies.html", context)
+
+def altitude_milestones(request):
+    user = request.GET.get("name").lower()
+    milestones = get_altitude_milestones(user)
+    context = {
+        "milestones": milestones,
+        "arg_name": user
+    }
+    return render(request, "tracker/milestones.html", context)
