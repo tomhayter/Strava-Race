@@ -313,7 +313,29 @@ def update_trophy_winners():
     trophy_sheet["B17"], trophy_sheet["C17"] = highest_point
 
     spreadsheet.save(filename=f"{settings.BASE_DIR}\\..\\Deployment\\Running Milestones.xlsx")
+
+def update_altitude_milestones():
+    spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\Deployment\\Running Milestones.xlsx")
+    spreadsheet1 = spreadsheet["Altitude"]
+    for user in USERS:
+        user_column = get_user_column(user)
+        activities = get_activities(user)
+        total = get_stats(user).total_elevation
+        for row in range(3, spreadsheet1.max_row+1):
+            milestone_distance = spreadsheet1.cell(row, 2).value
+            if milestone_distance > total:
+                break
+            running_total = 0
+            for activity in activities:
+                running_total += unithelper.meter(activity.total_elevation_gain).num
+                if running_total > milestone_distance:
+                    spreadsheet1.cell(row, user_column).value = datetime(activity.start_date.year,
+                                                                         activity.start_date.month,
+                                                                         activity.start_date.day)
+                    break
     
+    spreadsheet.save(filename=f"{settings.BASE_DIR}\\..\\Deployment\\Running Milestones.xlsx")
+
 def update_milestones():
     # Update the milestone dates achieved
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\Deployment\\Running Milestones.xlsx")
@@ -400,6 +422,7 @@ def home(request):
 
     # TODO: Thread these
     update_milestones()
+    update_altitude_milestones()
     update_trophy_winners()
 
     context = {
@@ -463,7 +486,8 @@ def milestones(request):
     milestones = get_milestones(user)
     context = {
         "milestones": milestones,
-        "arg_name": user
+        "arg_name": user,
+        "unit": "km"
     }
     return render(request, "tracker/milestones.html", context)
 
@@ -479,6 +503,7 @@ def altitude_milestones(request):
     milestones = get_altitude_milestones(user)
     context = {
         "milestones": milestones,
-        "arg_name": user
+        "arg_name": user,
+        "unit": "m"
     }
     return render(request, "tracker/milestones.html", context)
