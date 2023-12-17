@@ -417,6 +417,7 @@ def user(request):
 
     user = request.GET.get("name").lower()
     milestones = get_milestones(user)
+    altitude_milestones = get_altitude_milestones(user)
 
     # Get distance data
     athlete = get_athlete(user)
@@ -426,6 +427,8 @@ def user(request):
     cycle = stats.cycle_distance
     hike = stats.hike_distance
     altitude = stats.total_elevation
+
+    completed_altitudes = [a for a in altitude_milestones if a.distance < altitude]
 
     trophies = get_trophies()
     my_trophies = []
@@ -450,6 +453,7 @@ def user(request):
         "progress": round(progress),
         "trophies" : my_trophies,
         "completed_milestones": completed,
+        "completed_altitude_milestones": completed_altitudes,
         "arg_name": user
     }
     return render(request, "tracker/user.html", context)
