@@ -131,6 +131,23 @@ def get_trophies():
         
     return trophies
 
+def get_altitude_milestones(user):
+    # Get milestones from excel with following data (milestone name, distance, link, date achieved)
+    spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\Deployment\\Running Milestones.xlsx")
+    spreadsheet1 = spreadsheet["Altitude"]
+
+    user_column = get_user_column(user)
+
+    milestones = []
+    for row in range(3, spreadsheet1.max_row+1):
+        milestones.append(
+            Milestone(
+            spreadsheet1.cell(row, 1).value,
+            spreadsheet1.cell(row, 2).value,
+            spreadsheet1.cell(row, user_column).value,
+            spreadsheet1.cell(row, 6).value))
+    return milestones
+
 def get_milestones(user):
     # Get milestones from excel with following data (milestone name, distance, link, date achieved)
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\Deployment\\Running Milestones.xlsx")
@@ -296,7 +313,29 @@ def update_trophy_winners():
     trophy_sheet["B17"], trophy_sheet["C17"] = highest_point
 
     spreadsheet.save(filename=f"{settings.BASE_DIR}\\..\\Deployment\\Running Milestones.xlsx")
+
+def update_altitude_milestones():
+    spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\Deployment\\Running Milestones.xlsx")
+    spreadsheet1 = spreadsheet["Altitude"]
+    for user in USERS:
+        user_column = get_user_column(user)
+        activities = get_activities(user)
+        total = get_stats(user).total_elevation
+        for row in range(3, spreadsheet1.max_row+1):
+            milestone_distance = spreadsheet1.cell(row, 2).value
+            if milestone_distance > total:
+                break
+            running_total = 0
+            for activity in activities:
+                running_total += unithelper.meter(activity.total_elevation_gain).num
+                if running_total > milestone_distance:
+                    spreadsheet1.cell(row, user_column).value = datetime(activity.start_date.year,
+                                                                         activity.start_date.month,
+                                                                         activity.start_date.day)
+                    break
     
+    spreadsheet.save(filename=f"{settings.BASE_DIR}\\..\\Deployment\\Running Milestones.xlsx")
+
 def update_milestones():
     # Update the milestone dates achieved
     spreadsheet = openpyxl.load_workbook(f"{settings.BASE_DIR}\\..\\Deployment\\Running Milestones.xlsx")
@@ -383,6 +422,7 @@ def home(request):
 
     # TODO: Thread these
     update_milestones()
+    update_altitude_milestones()
     update_trophy_winners()
 
     context = {
@@ -400,6 +440,7 @@ def user(request):
 
     user = request.GET.get("name").lower()
     milestones = get_milestones(user)
+    altitude_milestones = get_altitude_milestones(user)
 
     # Get distance data
     athlete = get_athlete(user)
@@ -409,6 +450,8 @@ def user(request):
     cycle = stats.cycle_distance
     hike = stats.hike_distance
     altitude = stats.total_elevation
+
+    completed_altitudes = [a for a in altitude_milestones if a.distance < altitude]
 
     trophies = get_trophies()
     my_trophies = []
@@ -433,6 +476,7 @@ def user(request):
         "progress": round(progress),
         "trophies" : my_trophies,
         "completed_milestones": completed,
+        "completed_altitude_milestones": completed_altitudes,
         "arg_name": user
     }
     return render(request, "tracker/user.html", context)
@@ -442,7 +486,8 @@ def milestones(request):
     milestones = get_milestones(user)
     context = {
         "milestones": milestones,
-        "arg_name": user
+        "arg_name": user,
+        "unit": "km"
     }
     return render(request, "tracker/milestones.html", context)
 
@@ -452,3 +497,13 @@ def trophies(request):
         "trophies": trophies
     }
     return render(request, "tracker/trophies.html", context)
+
+def altitude_milestones(request):
+    user = request.GET.get("name").lower()
+    milestones = get_altitude_milestones(user)
+    context = {
+        "milestones": milestones,
+        "arg_name": user,
+        "unit": "m"
+    }
+    return render(request, "tracker/milestones.html", context)

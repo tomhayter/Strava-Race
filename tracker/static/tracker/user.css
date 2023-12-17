@@ -18,9 +18,15 @@
 .milestones {
   width: 24%;
   float: right;
+}
+
+.milestone-block {
   box-sizing: border-box;
   padding-left: 20px;
   padding-right: 30px;
+  padding-bottom: 1px;
+  padding-top: 1px;
+  margin-bottom: 10px;
   border-radius: 10px 0 0 10px;
   background-color: rgba(130, 212, 133, 0.25);
 }
