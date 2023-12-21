@@ -7,7 +7,6 @@ import pickle
 import time as t
 from datetime import datetime, timedelta, date
 import yaml
-import openpyxl
 
 # Get config
 config = yaml.safe_load(open(f"{settings.BASE_DIR}\\..\\Deployment\\config.yml"))
@@ -87,19 +86,6 @@ class Cache:
 
 CACHE = Cache()
 
-class LocalMilestone:
-    def __init__(self, name, distance, date_achieved, link):
-        self.name = name
-        self.distance = distance
-        if date_achieved is None:
-            self.date_achieved = ""
-        else:
-            self.date_achieved = datetime.date(date_achieved)
-        if link is None:
-            self.link = ""
-        else: 
-            self.link = link
-
 def get_trophies():        
     return Trophy.objects.all()
 
@@ -134,7 +120,6 @@ def update_trophy(trophy_name, tuple):
     trophy.holder = tuple[0]
     trophy.value = tuple[1]
     trophy.save()
-
 
 def update_trophy_winners():
     most_activities = (None, 0)
@@ -315,7 +300,7 @@ def home(request):
 
     rankings = sorted(rankings, key=lambda x: x[1])
 
-    # TODO: Thread these
+    # TODO: Cron these
     update_milestones()
     update_altitude_milestones()
     update_trophy_winners()
