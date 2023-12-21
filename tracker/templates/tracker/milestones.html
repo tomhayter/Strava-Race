@@ -25,8 +25,8 @@
         </tr>
         {% for row in milestones %}
         <tr>
-            {% if row.link and row.date_achieved %}
-            {% with 'tracker/img/'|add:row.link as image_static %}
+            {% if row.milestone.imageFile and row.dateAchieved %}
+            {% with 'tracker/img/'|add:row.milestone.imageFile as image_static %}
             <td><img class="icon" src="{% static image_static %}"></td>
             {% endwith %}
             {% else %}
@@ -34,9 +34,9 @@
             <td><img class="icon" src="{% static image_static %}"></td>
             {% endwith %}
             {% endif %}
-            <td>{{row.name}}</td>
-            <td>{{row.distance}}</td>
-            <td>{{row.date_achieved}}</td>
+            <td>{{row.milestone.name}}</td>
+            <td>{{row.milestone.distance}}</td>
+            <td>{{row.dateAchieved}}</td>
         </tr>
         {% endfor %}
     </table>

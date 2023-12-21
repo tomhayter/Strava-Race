@@ -75,10 +75,10 @@
             <div>
                 <p>Distance Milestones:</p>
                 {% for m in completed_milestones %}
-                {% with 'tracker/img/'|add:m.link as image_static %}
+                {% with 'tracker/img/'|add:m.milestone.imageFile as image_static %}
                 <div class="tooltip">
                     <img class="milestone-icon" src="{% static image_static %}">
-                    <span class="tooltip-text">{{m.name}} - {{m.distance}}km</span>
+                    <span class="tooltip-text">{{m.milestone.name}} - {{m.milestone.distance}}km</span>
                 </div>
                 {% endwith %}
                 {% endfor %}
@@ -91,7 +91,7 @@
             <div>
                 <p>Altitude Milestones:</p>
                 {% for m in completed_altitude_milestones %}
-                {% with 'tracker/img/'|add:m.link as image_static %}
+                {% with 'tracker/img/'|add:m.milestone.imageFile as image_static %}
                 <div class="tooltip">
                     <img class="milestone-icon" src="{% static image_static %}">
                     <span class="tooltip-text">{{m.name}} - {{m.distance}}km</span>
