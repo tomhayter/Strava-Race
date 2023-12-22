@@ -300,9 +300,9 @@ def get_athlete(userID):
 
 def home(request):
     # TODO: Cron these
+    get_new_activities()
     update_milestones()
     update_altitude_milestones()
-    get_new_activities()
     update_trophy_winners()
 
     rankings = []
