@@ -4,9 +4,12 @@ class User(models.Model):
     fullName = models.CharField(max_length=100)
     firstName = models.CharField(max_length=100)
     lastName = models.CharField(max_length=100)
+    clientID = models.IntegerField()
     clientSecret = models.CharField(max_length=300)
-    refreshSecret = models.CharField(max_length=300)
+    accessToken = models.CharField(max_length=300)
+    refreshToken = models.CharField(max_length=300)
     code = models.CharField(max_length=300)
+    expiresAt = models.IntegerField()
 
     def __str__(self):
         return self.fullName
@@ -49,18 +52,18 @@ class Activity(models.Model):
     totalElevation = models.FloatField()
     highestPoint = models.FloatField()
     type = models.CharField(max_length=25)
-    duration = models.TimeField()
+    duration = models.DurationField()
     country = models.CharField(max_length=100)
     startDate = models.DateField()
+    stravaID = models.IntegerField()
 
     def __str__(self):
-        return self.name
+        return f"{self.user.fullName} - {self.name}"
 
 class BestEffort(models.Model):
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
-    distance = models.FloatField()
     name = models.CharField(max_length=50)
-    type = models.CharField(max_length=25)
+    time = models.DurationField()
 
     def __str__(self):
-        return self.name
+        return f"{self.activity.user.fullName} - {self.name}"

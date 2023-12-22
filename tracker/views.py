@@ -1,31 +1,26 @@
 from django.shortcuts import render
-from django.conf import settings
 from .models import Activity, BestEffort, Milestone, Trophy, User, UserMilestone
 from stravalib.client import Client
 from stravalib import unithelper
-import pickle
 import time as t
-from datetime import datetime, timedelta, date
-import yaml
+from datetime import timedelta, date
 
-# Get config
-config = yaml.safe_load(open(f"{settings.BASE_DIR}\\..\\Deployment\\config.yml"))
 
-RACE_START = datetime(2023, 8, 24)
+TRACKED_BEST_EFFORTS = ["5k", "10k", "Half-Marathon", "Marathon"]
 
 class Statistics:
-    def __init__(self, client, activities):
+    def __init__(self, userID):
         self.total_distance = 0
         self.run_distance = 0
         self.cycle_distance = 0
         self.hike_distance = 0
         self.total_elevation = 0
-        self.total_time = timedelta()
+        self.total_time = timedelta.min
         self.countries = set()
         self.best_5k = timedelta.max
         self.best_10k = timedelta.max
         self.best_half = timedelta.max
-        # self.best_marathon = timedelta()
+        # self.best_marathon = timedelta.max
 
         self.num_activities = 0
         self.longest_run = 0
@@ -34,55 +29,40 @@ class Statistics:
         self.largest_climb = 0
         self.highest_point = 0
 
-        for activity in activities:
-            dt = datetime(activity.start_date.year,
-                        activity.start_date.month,
-                        activity.start_date.day)
-            if dt < RACE_START:
-                continue
-            self.total_distance += unithelper.kilometer(activity.distance).num
-            self.total_elevation += unithelper.meter(activity.total_elevation_gain).num
-            self.largest_climb = max(self.largest_climb, unithelper.meter(activity.total_elevation_gain).num)
-            self.total_time += activity.moving_time
+        for activity in Activity.objects.filter(user__id=userID):
+            self.total_distance += activity.distance
+            self.total_elevation += activity.totalElevation
+            self.largest_climb = max(self.largest_climb, activity.totalElevation)
+            self.total_time += activity.duration
             self.num_activities += 1
-            self.highest_point = max(self.highest_point, activity.elev_high)
-            self.countries.add(activity.location_country)
+            self.highest_point = max(self.highest_point, activity.highestPoint)
+            self.countries.add(activity.country)
             if activity.type == "Run":
-                self.longest_run = max(self.longest_run, unithelper.kilometer(activity.distance).num)
-                self.run_distance += unithelper.kilometer(activity.distance).num
-                activity_with_be = client.get_activity(activity.id, True)
-                if activity_with_be.best_efforts:
-                    for effort in activity_with_be.best_efforts:
-                        if effort.name == "5k":
-                            self.best_5k = min(self.best_5k, effort.elapsed_time)
-                        elif effort.name == "10k":
-                            self.best_10k = min(self.best_10k, effort.elapsed_time)
-                        elif effort.name == "Half-Marathon":
-                            self.best_half = min(self.best_half, effort.elapsed_time)
+                self.longest_run = max(self.longest_run, activity.distance)
+                self.run_distance += activity.distance      
             elif activity.type == "Ride":
-                self.longest_cycle = max(self.longest_cycle, unithelper.kilometer(activity.distance).num)
-                self.cycle_distance += unithelper.kilometer(activity.distance).num
+                self.longest_cycle = max(self.longest_cycle, activity.distance)
+                self.cycle_distance += activity.distance
             elif activity.type == "Hike" or activity.type == "Walk":
-                self.longest_hike = max(self.longest_hike, unithelper.kilometer(activity.distance).num)
-                self.hike_distance += unithelper.kilometer(activity.distance).num
-                
+                self.longest_hike = max(self.longest_hike, activity.distance)
+                self.hike_distance += activity.distance
 
-class LocalUser:
-    def __init__(self, user):
-        self.client = get_client_for_user(User.objects.get(id=user).firstName.lower())
-        self.activities = list(self.client.get_activities(limit=100, after="2023-08-24T00:00:00Z"))
-        self.activities = sorted(self.activities, key=lambda x: x.start_date)
-        self.stats = Statistics(self.client, self.activities)
+        for effort in BestEffort.objects.filter(activity__user__id=userID):
+            if effort.name == "5k":
+                self.best_5k = min(self.best_5k, effort.time)
+            elif effort.name == "10k":
+                self.best_10k = min(self.best_10k, effort.time)
+            elif effort.name == "Half-Marathon":
+                self.best_half = min(self.best_half, effort.time) 
 
 
 class Cache:
     def __init__(self):
         # TODO: Update cache regularly using last updated time
-        self.updated = datetime.now()
         self.users = {}
 
     def add_user(self, user):
-        self.users[user] = LocalUser(user)
+        self.users[user] = Statistics(user)
 
 CACHE = Cache()
 
@@ -131,7 +111,7 @@ def update_trophy_winners():
     longest_hike = (None, 0)
     largest_climb = (None, 0)
     most_climbing = (None, 0)
-    most_time = (None, timedelta())
+    most_time = (None, timedelta.min)
     highest_point = (None, 0)
     most_countries = (None, 0)
     fastest_5k = (None, timedelta.max)
@@ -172,7 +152,7 @@ def update_trophy_winners():
         if highest_point[1] < stats.highest_point:
             highest_point = (user, round(stats.highest_point))
 
-        if most_countries[1] < len(stats.countries):
+        if most_countries[1] <= len(stats.countries):
             most_countries = (user, len(stats.countries))
 
         if fastest_5k[1] > stats.best_5k:
@@ -237,73 +217,102 @@ def update_milestones():
                 running_total += unithelper.kilometer(activity.distance).num
                 if running_total > milestone_distance:
                     instance = UserMilestone.objects.get(user=user, milestone=milestone)
-                    instance.dateAchieved = date(activity.start_date.year,
-                                                activity.start_date.month,
-                                                activity.start_date.day)
+                    instance.dateAchieved = date(activity.startDate.year,
+                                                activity.startDate.month,
+                                                activity.startDate.day)
                     instance.save()
                     break
 
-def get_client_for_user(user):
+def get_new_activities():
+    for u in User.objects.all():
+        client = get_client_for_user(u.id)
+        activities = list(client.get_activities(limit=100, after=f"2023-08-24T00:00:00Z"))
+        activities = sorted(activities, key=lambda x: x.start_date)
+
+        stored_activities = Activity.objects.filter(user__id=u.id)
+        stored_ids = [a.stravaID for a in stored_activities]
+        for a in activities:
+            if a.id in stored_ids:
+                continue
+            adb = Activity.objects.create(
+                user=u,
+                name=a.name,
+                distance=unithelper.kilometer(a.distance).num,
+                totalElevation=unithelper.meter(a.total_elevation_gain).num,
+                highestPoint=a.elev_high,
+                type=a.type,
+                duration=a.moving_time,
+                country=a.location_country or "United Kingdom",
+                startDate=date(a.startDate.year,
+                               a.startDate.month,
+                               a.startDate.day),
+                stravaID=a.id)
+            if a.type == "Run":
+                abe = client.get_activity(a.id, True)
+                if abe.best_efforts:
+                    for be in abe.best_efforts:
+                        if be.name not in TRACKED_BEST_EFFORTS:
+                            continue
+                        BestEffort.objects.create(
+                            activity=adb,
+                            name=be.name,
+                            time=be.elapsed_time
+                        )
+
+def get_client_for_user(userID):
     # Get the client for a user.
-    CLIENT_ID = config[user]["client_id"]
-    CLIENT_SECRET = config[user]["client_secret"]
+    user = User.objects.get(id=userID)
 
     # Strava authentication
     client = Client()
 
-    with open(f'{settings.BASE_DIR}\\..\\Deployment\\access_tokens\\{user}_access_token.pickle', 'rb') as f:
-        access_token = pickle.load(f)
-
-    if t.time() > access_token['expires_at']:
+    if t.time() > user.expiresAt:
         print('Token has expired, will refresh')
-        refresh_response = client.refresh_access_token(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
-                                                    refresh_token=access_token["refresh_token"])
-        access_token = refresh_response
-        with open(f'{settings.BASE_DIR}\\..\\Deployment\\access_tokens\\{user}_access_token.pickle', 'wb') as f:
-            pickle.dump(refresh_response, f)
+        refresh_response = client.refresh_access_token(client_id=user.clientID, client_secret=user.clientSecret,
+                                                    refresh_token=user.refreshToken)
         print('Refreshed token saved to file')
         client.access_token = refresh_response['access_token']
         client.refresh_token = refresh_response['refresh_token']
         client.token_expires_at = refresh_response['expires_at']
-
+        user.accessToken = refresh_response['access_token']
+        user.refreshToken = refresh_response['refresh_token']
+        user.expiresAt = refresh_response['expires_at']
     else:
         print('Token still valid, expires at {}'
-            .format(t.strftime("%a, %d %b %Y %H:%M:%S %Z", t.localtime(access_token['expires_at']))))
-        client.access_token = access_token['access_token']
-        client.refresh_token = access_token['refresh_token']
-        client.token_expires_at = access_token['expires_at']
+            .format(t.strftime("%a, %d %b %Y %H:%M:%S %Z", t.localtime(user.expiresAt))))
+        client.access_token = user.accessToken
+        client.refresh_token = user.refreshToken
+        client.token_expires_at = user.expiresAt
 
+    user.save()
     return client
 
 def get_stats(user):
     if user not in CACHE.users:
         CACHE.add_user(user)
-    return CACHE.users[user].stats
+    return CACHE.users[user]
 
-def get_activities(user):
-    if user not in CACHE.users:
-        CACHE.add_user(user)
-    return CACHE.users[user].activities
+def get_activities(userID):
+    return Activity.objects.filter(user__id=userID)
 
 def get_athlete(userID):
     return User.objects.get(id=userID)
 
 def home(request):
-    rankings = []
+    # TODO: Cron these
+    update_milestones()
+    update_altitude_milestones()
+    get_new_activities()
+    update_trophy_winners()
 
+    rankings = []
     cumulative = 0
     for user in User.objects.all():
         # Get distance data
         total = get_stats(user.id).total_distance
         rankings.append((user, total))
         cumulative += total
-
     rankings = sorted(rankings, key=lambda x: x[1])
-
-    # TODO: Cron these
-    update_milestones()
-    update_altitude_milestones()
-    update_trophy_winners()
 
     context = {
         "first": rankings[-1][0],
