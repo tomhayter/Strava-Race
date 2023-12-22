@@ -15,7 +15,7 @@ class Statistics:
         self.cycle_distance = 0
         self.hike_distance = 0
         self.total_elevation = 0
-        self.total_time = timedelta.min
+        self.total_time = timedelta()
         self.countries = set()
         self.best_5k = timedelta.max
         self.best_10k = timedelta.max
@@ -111,7 +111,7 @@ def update_trophy_winners():
     longest_hike = (None, 0)
     largest_climb = (None, 0)
     most_climbing = (None, 0)
-    most_time = (None, timedelta.min)
+    most_time = (None, timedelta())
     highest_point = (None, 0)
     most_countries = (None, 0)
     fastest_5k = (None, timedelta.max)
