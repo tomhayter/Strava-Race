@@ -17,15 +17,15 @@
 
 <div class="container podium">
     <div class="podium__item">
-      <p class="podium__city"><a href="{% url 'user' %}?name={{second}}">{{second}}</a></p>
+      <p class="podium__city"><a href="{% url 'user' %}?name={{second.id}}">{{second.firstName}}</a></p>
       <div class="podium__rank second">{{second_distance}}km</div>
     </div>
     <div class="podium__item">
-      <p class="podium__city"><a href="{% url 'user' %}?name={{first}}">{{first}}</a></p>
+      <p class="podium__city"><a href="{% url 'user' %}?name={{first.id}}">{{first.firstName}}</a></p>
       <div class="podium__rank first">{{first_distance}}km</div>
     </div>
     <div class="podium__item">
-      <p class="podium__city"><a href="{% url 'user' %}?name={{third}}">{{third}}</a></p>
+      <p class="podium__city"><a href="{% url 'user' %}?name={{third.id}}">{{third.firstName}}</a></p>
       <div class="podium__rank third">{{third_distance}}km</div>
     </div>
 </div>
