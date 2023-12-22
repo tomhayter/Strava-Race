@@ -36,7 +36,11 @@
             {% endif %}
             <td>{{row.milestone.name}}</td>
             <td>{{row.milestone.distance}}</td>
+            {% if row.dateAchieved %}
             <td>{{row.dateAchieved}}</td>
+            {% else %}
+            <td></td>
+            {% endif %}
         </tr>
         {% endfor %}
     </table>

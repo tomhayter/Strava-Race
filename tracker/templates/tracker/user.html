@@ -94,7 +94,7 @@
                 {% with 'tracker/img/'|add:m.milestone.imageFile as image_static %}
                 <div class="tooltip">
                     <img class="milestone-icon" src="{% static image_static %}">
-                    <span class="tooltip-text">{{m.name}} - {{m.distance}}km</span>
+                    <span class="tooltip-text">{{m.milestone.name}} - {{m.milestone.distance}}km</span>
                 </div>
                 {% endwith %}
                 {% endfor %}

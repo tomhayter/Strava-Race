@@ -192,12 +192,10 @@ def update_altitude_milestones():
                 break
             running_total = 0
             for activity in activities:
-                running_total += unithelper.meter(activity.total_elevation_gain).num
+                running_total += activity.totalElevation
                 if running_total > milestone_distance:
                     instance = UserMilestone.objects.get(user=user, milestone=milestone)
-                    instance.dateAchieved = date(activity.start_date.year,
-                                                activity.start_date.month,
-                                                activity.start_date.day)
+                    instance.dateAchieved = activity.startDate
                     instance.save()
                     break
 
@@ -214,12 +212,10 @@ def update_milestones():
                 break
             running_total = 0
             for activity in activities:
-                running_total += unithelper.kilometer(activity.distance).num
+                running_total += activity.distance
                 if running_total > milestone_distance:
                     instance = UserMilestone.objects.get(user=user, milestone=milestone)
-                    instance.dateAchieved = date(activity.startDate.year,
-                                                activity.startDate.month,
-                                                activity.startDate.day)
+                    instance.dateAchieved = activity.startDate
                     instance.save()
                     break
 
