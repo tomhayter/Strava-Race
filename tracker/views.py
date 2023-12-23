@@ -239,9 +239,7 @@ def get_new_activities():
                 type=a.type,
                 duration=a.moving_time,
                 country=a.location_country or "United Kingdom",
-                startDate=date(a.startDate.year,
-                               a.startDate.month,
-                               a.startDate.day),
+                startDate=a.start_date,
                 stravaID=a.id)
             if a.type == "Run":
                 abe = client.get_activity(a.id, True)
