@@ -83,6 +83,10 @@
   background: var(--primary)
 }
 
+.progress-bar-img {
+  float: right;
+}
+
 .milestone-markers {
   display: flex;
   font-size: small;

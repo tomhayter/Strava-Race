@@ -1,10 +1,15 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import Activity, BestEffort, Milestone, Trophy, User, UserMilestone
 from stravalib.client import Client
-from stravalib import unithelper
+from stravalib import unit_helper
 import time as t
-from datetime import timedelta, date
-
+from datetime import timedelta
+from django.conf import settings
+import requests
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User as WebUser
+from  django.contrib.auth.forms import UserCreationForm
+from .forms import LoginForm
 
 TRACKED_BEST_EFFORTS = ["5k", "10k", "Half-Marathon", "Marathon"]
 
@@ -239,11 +244,11 @@ def get_new_activities():
             adb = Activity.objects.create(
                 user=u,
                 name=a.name,
-                distance=unithelper.kilometer(a.distance).num,
-                totalElevation=unithelper.meter(a.total_elevation_gain).num,
+                distance=unit_helper.kilometer(a.distance).magnitude,
+                totalElevation=unit_helper.meter(a.total_elevation_gain).magnitude,
                 highestPoint=a.elev_high,
                 type=a.type,
-                duration=a.moving_time,
+                duration=a.moving_time.timedelta(),
                 country=a.location_country or "United Kingdom",
                 startDate=a.start_date,
                 stravaID=a.id)
@@ -268,7 +273,7 @@ def get_client_for_user(userID):
 
     if t.time() > user.expiresAt:
         print('Token has expired, will refresh')
-        refresh_response = client.refresh_access_token(client_id=user.clientID, client_secret=user.clientSecret,
+        refresh_response = client.refresh_access_token(client_id=settings.STRAVA_CLIENT_ID, client_secret=settings.STRAVA_CLIENT_SECRET,
                                                     refresh_token=user.refreshToken)
         print('Refreshed token saved to file')
         client.access_token = refresh_response['access_token']
@@ -277,6 +282,7 @@ def get_client_for_user(userID):
         user.accessToken = refresh_response['access_token']
         user.refreshToken = refresh_response['refresh_token']
         user.expiresAt = refresh_response['expires_at']
+        user.save()
     else:
         print('Token still valid, expires at {}'
             .format(t.strftime("%a, %d %b %Y %H:%M:%S %Z", t.localtime(user.expiresAt))))
@@ -284,7 +290,6 @@ def get_client_for_user(userID):
         client.refresh_token = user.refreshToken
         client.token_expires_at = user.expiresAt
 
-    user.save()
     return client
 
 def get_stats(user):
@@ -310,15 +315,24 @@ def home(request):
     for user in User.objects.all():
         # Get distance data
         total = get_stats(user.id).total_distance
-        rankings.append((user, total))
+        rankings.append((user.firstName, user.id, total))
         cumulative += total
-    rankings = sorted(rankings, key=lambda x: x[1])
+    
+    if len(rankings) < 3:
+        for _ in range(3-len(rankings)):
+            rankings.append(("", 0 ,0))
 
+    rankings = sorted(rankings, key=lambda x: x[1])
+    
     context = {
+        "logged_in": request.user.is_authenticated,
         "first": rankings[-1][0],
         "second" : rankings[-2][0],
         "third" : rankings[-3][0],
-        "first_distance" : round(rankings[-1][1]),
+        "first_id": rankings[-1][1],
+        "second_id": rankings[-2][1],
+        "third_id": rankings[-3][1],
+        "first_distance" : round(rankings[-1][2]),
         "second_distance" : round(rankings[-2][1]),
         "third_distance" : round(rankings[-3][1]),
         "cumulative_distance" : round(cumulative)
@@ -342,10 +356,13 @@ def user(request):
     my_trophies = get_trophies_for_user(userID)
 
     closest_below, closest_above, completed = get_nearest_milestones(milestones, total)
+    completed.reverse()
+    completed_altitudes.reverse()
 
     progress = 100 * (total - closest_below.distance)/(closest_above.distance - closest_below.distance)
 
     context = {
+        "logged_in": request.user.is_authenticated,
         "name": athlete.firstName + " " + athlete.lastName,
         "total_distance" : round(total, 2),
         "run_distance" : round(run, 2),
@@ -366,6 +383,7 @@ def milestones(request):
     userID = int(request.GET.get("name"))
     milestones = get_milestones_for_user(False, userID)
     context = {
+        "logged_in": request.user.is_authenticated,
         "milestones": milestones,
         "arg_name": userID,
         "unit": "km"
@@ -375,6 +393,7 @@ def milestones(request):
 def trophies(request):
     trophies = get_trophies()
     context = {
+        "logged_in": request.user.is_authenticated,
         "trophies": trophies
     }
     return render(request, "tracker/trophies.html", context)
@@ -383,8 +402,194 @@ def altitude_milestones(request):
     userID = int(request.GET.get("name"))
     milestones = get_milestones_for_user(True, userID)
     context = {
+        "logged_in": request.user.is_authenticated,
         "milestones": milestones,
         "arg_name": userID,
         "unit": "m"
     }
     return render(request, "tracker/milestones.html", context)
+
+def link_strava(request):
+    strava_auth_url = (
+        "https://www.strava.com/oauth/authorize"
+        "?client_id={client_id}"
+        "&redirect_uri={redirect_uri}"
+        "&response_type=code"
+        "&approval_prompt=auto"
+        "&scope=activity:read_all"
+    ).format(
+        client_id=settings.STRAVA_CLIENT_ID,
+        redirect_uri=request.build_absolute_uri("/tracker/strava_callback/")
+    )
+
+    return redirect(strava_auth_url)
+
+def unlink_strava(request):
+    user_id = request.GET.get("user")
+    if request.user.is_authenticated and request.user.id == user_id:
+        u = User.objects.get(id = user_id)
+        u.delete()
+
+    return redirect("/account/")
+
+def delete_account(request):
+    user_id = request.GET.get("user")
+    if request.user.is_authenticated and request.user.id == user_id:
+        try:
+            u = WebUser.objects.get(id = user_id)
+            u.delete()
+            err = "The user is deleted"
+
+        except Exception as e: 
+            return render(request, 'front.html',{'err':e.message})
+
+        return render(request, 'front.html') 
+        
+
+    return redirect("/tracker/")
+
+def load_signup(request):
+    error_message = ""
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = WebUser.objects.create_user(username=form.cleaned_data["username"], password=form.cleaned_data["password1"])
+            login(request, user)
+            return redirect("/tracker/account")
+        else:
+            error_message = form.errors.as_ul
+    signup_form = UserCreationForm()
+    context = {
+        "error_message": error_message,
+        "logged_in": request.user.is_authenticated,
+        "sign_up_form": signup_form
+    }
+    return render(request, "tracker/signup.html", context)
+
+
+def load_login(request):
+    error_message = ""
+    if request.method == "POST":
+        user = authenticate(username=request.POST.get("username"), password=request.POST.get("password"))
+        if user is None:
+            # Failed
+            error_message = "Username or password incorrect."
+        else:
+            login(request, user)
+            return redirect("/tracker/account")
+    
+    login_form = LoginForm()
+    context = {
+        "error_message": error_message,
+        "logged_in": request.user.is_authenticated,
+        "login_form": login_form
+    }
+    return render(request, "tracker/login.html", context)
+     
+
+def attempt_logout(request):
+    logout(request)
+    return redirect("/tracker/")
+    
+
+def strava_callback(request):
+    auth_code = request.GET.get('code')
+
+    if auth_code:
+        response = requests.post(
+            settings.AUTH_URL,
+            data={
+                'client_id': settings.STRAVA_CLIENT_ID,
+                'client_secret': settings.STRAVA_CLIENT_SECRET,
+                'code': auth_code,
+                'grant_type': 'authorization_code'
+            }
+        )
+
+        if response.status_code == 200:
+            data = response.json()
+            athlete_data = data.get("athlete")
+            if athlete_data is None:
+                return redirect('home')
+
+            user_id = athlete_data.get("id")
+            existing_athlete = User.objects.filter(strava_id=user_id).first()
+
+            if existing_athlete:
+                existing_athlete.refresh_token = data.get("refresh_token")
+                existing_athlete.access_token = data.get("access_token")
+                existing_athlete.expires_at = data.get("expires_at")
+                existing_athlete.save()
+            else:
+                # New User
+                u = User.objects.create(
+                    webuser=request.user,
+                    strava_id=user_id,
+                    firstName=athlete_data.get("firstname"),
+                    lastName=athlete_data.get("lastname"),
+                    accessToken=data.get("access_token"),
+                    refreshToken=data.get("refresh_token"),
+                    expiresAt=data.get("expires_at"),
+                    code="abc"
+                )
+                milestones = Milestone.objects.all()
+                for m in milestones:
+                    UserMilestone.objects.create(
+                        user=u,
+                        milestone=m
+                    )
+            return redirect("/tracker/")
+        return redirect("/tracker/")
+    return redirect("/tracker/")
+
+def account(request):
+    if request.user.is_authenticated:
+        user = request.user
+        athlete = User.objects.filter(webuser=user).first()
+
+        context = {
+            "logged_in": request.user.is_authenticated,
+            "user": user,
+            "strava_linked": athlete != None,
+            "athlete": athlete
+        }
+        return render(request, "tracker/account.html", context)
+    else:
+        return redirect("/tracker/")
+
+def leaderboard_page(request):
+    rankings = []
+    for user in User.objects.all():
+        # Get distance data
+        total = get_stats(user.id).total_distance
+        rankings.append((user, round(total)))
+
+    rankings = sorted(rankings, key=lambda x: x[1], reverse=True)
+
+    context = {
+        "logged_in": request.user.is_authenticated,
+        "unit": "km",
+        "users": rankings
+    }
+    return render(request, "tracker/leaderboard.html", context)
+
+def stats(request):
+    # userID = int(request.GET.get("name"))
+    nb_element = 100
+    xdata = range(nb_element)
+    ydata = [1, 2, 3, 4, 5, 6, 7, 8]
+    ydata2 = [1, 3, 2, 5, 4, 7, 6, 9, 8]
+
+    tooltip_date = "%d %b %Y %H:%M:%S %p"
+    extra_serie = {"tooltip": {"y_start": "", "y_end": " cal"},
+                   "date_format": tooltip_date}
+    chartdata = {'x': xdata,
+                 'name1': 'Tom', 'y1': ydata, 'extra1': extra_serie,
+                 'name2': 'Ben', 'y2': ydata2, 'extra2': extra_serie}
+    charttype = "lineChart"
+    context = {
+        "logged_in": request.user.is_authenticated,
+        'charttype': charttype,
+        'chartdata': chartdata
+    }
+    return render(request, "tracker/stats.html", context)

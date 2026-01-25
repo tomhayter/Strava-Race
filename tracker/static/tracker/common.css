@@ -4,6 +4,7 @@
     --primary: #82d485;
     --secondary: #65be67;
     --accent: #589d59;
+    --error: #9d5858;
 }
 
 body {
@@ -12,13 +13,29 @@ body {
 
 .header {
     overflow: hidden;
-    text-align: center;
     background: var(--primary);
     color: var(--text);
     font-weight: 700;
     font-size: 48px;
     margin-bottom: 40px;
-  }
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.title {
+    float: left;
+    margin-left: 50px;
+}
+
+.login {
+    background: var(--accent);
+    color: var(--background);
+    margin-right: 50px;
+    float: right;
+    font-size: 24px;
+    padding: 10px 10px 10px 10px;
+    border-radius: 10px 10px 10px 10px;
+}
   
 body {
     font-family: 'Raleway';

@@ -1,19 +1,19 @@
 from django.db import models
+from django.contrib.auth.models import User as WebUser
 
 class User(models.Model):
-    fullName = models.CharField(max_length=100)
+    webuser = models.OneToOneField(WebUser, on_delete=models.CASCADE, null=True)
+    strava_id = models.IntegerField()
     firstName = models.CharField(max_length=100)
     lastName = models.CharField(max_length=100)
-    clientID = models.IntegerField()
-    clientSecret = models.CharField(max_length=300)
     accessToken = models.CharField(max_length=300)
     refreshToken = models.CharField(max_length=300)
     code = models.CharField(max_length=300)
     expiresAt = models.IntegerField()
 
     def __str__(self):
-        return self.fullName
-
+        return self.firstName + " " + self.lastName
+    
 
 class Trophy(models.Model):
     name = models.CharField(max_length=300)
@@ -42,7 +42,7 @@ class UserMilestone(models.Model):
     dateAchieved = models.DateField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.fullName} - {str(self.milestone)}"
+        return f"{str(self.user)} - {str(self.milestone)}"
 
 
 class Activity(models.Model):
@@ -58,7 +58,7 @@ class Activity(models.Model):
     stravaID = models.IntegerField()
 
     def __str__(self):
-        return f"{self.user.fullName} - {self.name}"
+        return f"{str(self.user)} - {self.name}"
 
 class BestEffort(models.Model):
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
@@ -66,4 +66,4 @@ class BestEffort(models.Model):
     time = models.DurationField()
 
     def __str__(self):
-        return f"{self.activity.user.fullName} - {self.name}"
+        return f"{str(self.activity.user)} - {self.name}"

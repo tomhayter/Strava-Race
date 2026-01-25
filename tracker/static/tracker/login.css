@@ -1,0 +1,55 @@
+input {
+    box-sizing: border-box;
+    padding-left: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-left: 10px;
+    padding-right: 10px;
+    border-radius: 10px 10px 10px 10px;
+}
+
+.signup-box {
+    width: 50%;
+}
+
+.login-box {
+    width: 30%;
+}
+
+.form-box {
+    margin: auto;
+    background-color: var(--secondary);
+    padding: 30px 30px 30px 30px;
+    border-radius: 10px 10px 10px 10px;
+}
+
+.form-box span {
+    font-size: 0px;
+}
+
+.form-box ul {
+    font-size: 16px;
+}
+
+.login-title {
+    text-align: center;
+}
+
+.submit-form-button input {
+    margin: auto;
+    display: block;
+    width: 100px;
+    border: 0;
+    background-color: var(--accent);
+    color: var(--background);
+}
+
+.error-message {
+    background-color: var(--error);
+    color: var(--text);
+    margin: auto;
+    padding: 30px 30px 30px 30px;
+    border-radius: 10px 10px 10px 10px;
+    width: 30%;
+    margin-bottom: 30px; 
+}

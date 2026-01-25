@@ -1,0 +1,35 @@
+{% extends "tracker/base.html" %}
+{% load static %}
+      
+{% block content %}
+<link rel="stylesheet" href="{% static 'tracker/account.css' %}">
+
+<div class="welcome">
+    <p>Your Account, {{user.username}}</p>
+</div>
+<div class="content">
+    <div class="half-page">
+        {% if strava_linked %}
+        <a href="{% url 'user' %}?name={{athlete.id}}">
+            <div class="link-button">See stats</div>
+        </a>
+        <a href="{% url 'unlink_strava' %}?user={{athlete.id}}">
+            <div class="link-button">Unlink Strava</div>
+        </a>
+        <a href="{% url 'delete_account' %}?user={{athlete.id}}">
+            <div class="link-button">Delete Account</div>
+        </a>
+        {% else %}
+        <a href="{% url 'link_strava' %}">
+            <div class="link-button">Link Strava</div>
+        </a>
+        {% endif %}
+    </div>
+    <div class="half-page">
+        <div class="character-selection">
+            <div class="welcome">Choose Character</div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

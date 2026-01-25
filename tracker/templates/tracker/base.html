@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
+<link rel="stylesheet" href="{% static 'tracker/common.css' %}">
+<link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet'>
+<html lang="en-UK">
+<head>
+    <meta charset="utf-8" />
+    <title>Race Around the World</title>
+</head>
+<body>
+<div class="header">
+    <div class="title"><a href="{% url 'home' %}">Race Around the World</a></div>
+    {% if logged_in %}
+    <div class="login"><a href="{% url 'logout' %}">Log Out</a></div>
+    <div class="login">
+        <a href="{% url 'account' %}">Account</a>
+    </div>
+    {% else %}
+    <div class="login"><a href="{% url 'login' %}">Log In</a></div>
+    <div class="login"><a href="{% url 'signup' %}">Sign Up</a></div>
+    {% endif %}
+</div>
+
+{% block content %}{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+{% extends "tracker/base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'tracker/login.css' %}">
+        
+<div class="content">
+    {% if error_message %}
+    <div class="error-message">{{ error_message }}</div>
+    {% endif %}
+
+    <div class="form-box login-box">
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+            <div class="login-title">Login</div>
+
+            {{ login_form.as_p }}
+
+            <div class="submit-form-button">
+                <input type="submit" name="login" value="Log In">
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

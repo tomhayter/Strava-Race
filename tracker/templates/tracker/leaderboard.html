@@ -1,0 +1,24 @@
+{% extends "tracker/base.html" %}
+{% load static %}
+      
+{% block content %}
+        
+<link rel="stylesheet" href="{% static 'tracker/milestones.css' %}">
+<div class="content">
+    <table class="table">
+        <tr style="padding-bottom: 10px; border-bottom:3px solid black">
+            <th>#</th><th style="text-align: left; padding-left: 50px;">Name</th><th>Distance ({{unit}})</th>
+        </tr>
+        {% for row in users %}
+        <tr>
+            <td>{{ forloop.counter0|add:"1" }}</td>
+            <td><a href="{% url 'user' %}?name={{row.0.id}}">{{ row.0.firstName }} {{ row.0.lastName }}</a></td>
+            <td>{{ row.1 }}</td>
+            <td></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+
+{% endblock %}

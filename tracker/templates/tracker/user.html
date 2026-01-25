@@ -1,19 +1,9 @@
+{% extends "tracker/base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
-<link rel="stylesheet" href="{% static 'tracker/common.css' %}">
+      
+{% block content %}
+        
 <link rel="stylesheet" href="{% static 'tracker/user.css' %}">
-<link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet'>
-<html lang="en-UK">
-<head>
-    <meta charset="utf-8" />
-    <title>Race Around the World</title>
-</head>
-<body>
-<div class="header">
-    <p><a href="{% url 'home' %}">Race Around the World</a></p>
-</div>
-
 <div class="welcome">
     <p>Welcome {{name}}!</p>
 </div>
@@ -54,7 +44,9 @@
         </div>
         <div class="milestone-progress">
             <div class="progress-bar">
-                <div class="progress-bar-filled" style="width:{{progress}}%"></div>
+                <!-- <img class="progress-bar-img" src="/static/tracker/img/vw_camper_big.png"/> -->
+                <div class="progress-bar-filled" style="width:{{progress}}%">
+                </div>
             </div>
             <div class="milestone-markers">
                 <div class="previous-milestone-marker"></div>
@@ -106,5 +98,4 @@
     </div>
 </div>
 
-</body>
-</html>
+{% endblock %}

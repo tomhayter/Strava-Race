@@ -1,32 +1,36 @@
+{% extends "tracker/base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
-<link rel="stylesheet" href="{% static 'tracker/common.css' %}">
+      
+{% block content %}
+
 <link rel="stylesheet" href="{% static 'tracker/home.css' %}">
-<link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet'>
-<html lang="en-UK">
-<head>
-    <meta charset="utf-8" />
-    <title>Race Around the World</title>
-</head>
-<body>
-<div class="header">
-    <p><a href="{% url 'home' %}">Race Around the World</a></p>
-</div>
-
-
 <div class="container podium">
     <div class="podium__item">
-      <p class="podium__city"><a href="{% url 'user' %}?name={{second.id}}">{{second.firstName}}</a></p>
+      {% if second_id != 0 %}
+      <p class="podium__city"><a href="{% url 'user' %}?name={{second_id}}">{{second}}</a></p>
       <div class="podium__rank second">{{second_distance}}km</div>
+      {% else %}
+      <p class="podium__city">{{second}}</p>
+      <div class="podium__rank second"> </div>
+      {% endif %}
     </div>
     <div class="podium__item">
-      <p class="podium__city"><a href="{% url 'user' %}?name={{first.id}}">{{first.firstName}}</a></p>
+      {% if first_id != 0 %}
+      <p class="podium__city"><a href="{% url 'user' %}?name={{first_id}}">{{first}}</a></p>
       <div class="podium__rank first">{{first_distance}}km</div>
+      {% else %}
+      <p class="podium__city">{{first}}</p>
+      <div class="podium__rank first"> </div>
+      {% endif %}
     </div>
     <div class="podium__item">
-      <p class="podium__city"><a href="{% url 'user' %}?name={{third.id}}">{{third.firstName}}</a></p>
+      {% if third_id != 0 %}
+      <p class="podium__city"><a href="{% url 'user' %}?name={{third_id}}">{{third}}</a></p>
       <div class="podium__rank third">{{third_distance}}km</div>
+      {% else %}
+      <p class="podium__city">{{third}}</p>
+      <div class="podium__rank third"> </div>
+      {% endif %}
     </div>
 </div>
 
@@ -38,5 +42,9 @@
   <p><a href="{% url 'trophies' %}">See Trophies ></a></p>
 </div>
 
-</body>
-</html>
+<div class="trophy-button">
+  <p><a href="{% url 'leaderboard' %}">See Leaderboard ></a></p>
+</div>
+
+
+{% endblock %}
