@@ -1,0 +1,25 @@
+{% extends "tracker/base.html" %}
+{% load static %}
+      
+{% block content %}
+<link rel="stylesheet" href="{% static 'tracker/about.css' %}">
+
+<div class="welcome">
+    <h2>About</h2>
+</div>
+<div class="content">
+    <div class="section">
+        <h3>Origin</h3>
+        <p>
+            <i>August 2023.</i> Me and my good man Ben were discussing how much spaghetti you'd need to eat to go around the circumference of the Earth, when we decided to opt for a healthier option. A race around the world, by running, hiking, and cycling. Fourty thousand kilometers (and seventy five). 5k a day for 22 years. So here it is, a race around the world - with a few milestones along the way to keep us motivated. And trophies to aim to win along the way. All by using the Strava API to total up the length of the activities.
+        </p>
+    </div>
+    <div class="section">
+        <h3>The Legal Stuff</h3>
+        <p>
+            By linking your Strava account to this website you allow the race to collect your activity data from Strava. You also agree that anyone who visits this website can view your race statistics, aggregated from your activity data. Other than estimated fastest times, no specific activity data will be visible. You are able to unlink you Strava account at any time via the account page, and all Strava data will be removed immediately.
+        </p>
+    </div>
+</div>
+
+{% endblock %}

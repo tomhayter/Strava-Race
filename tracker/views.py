@@ -233,7 +233,10 @@ def update_milestones():
 def get_new_activities():
     for u in User.objects.all():
         client = get_client_for_user(u.id)
-        activities = list(client.get_activities(limit=100, after=f"2023-08-24T00:00:00Z"))
+        try:
+            activities = list(client.get_activities(limit=100, after=f"2023-08-24T00:00:00Z"))
+        except:
+            return
         activities = sorted(activities, key=lambda x: x.start_date)
 
         stored_activities = Activity.objects.filter(user__id=u.id)
@@ -252,17 +255,17 @@ def get_new_activities():
                 country=a.location_country or "United Kingdom",
                 startDate=a.start_date,
                 stravaID=a.id)
-            if a.type == "Run":
-                abe = client.get_activity(a.id, True)
-                if abe.best_efforts:
-                    for be in abe.best_efforts:
-                        if be.name not in TRACKED_BEST_EFFORTS:
-                            continue
-                        BestEffort.objects.create(
-                            activity=adb,
-                            name=be.name,
-                            time=be.elapsed_time
-                        )
+            # if a.type == "Run":
+            #     abe = client.get_activity(a.id, True)
+            #     if abe.best_efforts:
+            #         for be in abe.best_efforts:
+            #             if be.name not in TRACKED_BEST_EFFORTS:
+            #                 continue
+            #             BestEffort.objects.create(
+            #                 activity=adb,
+            #                 name=be.name,
+            #                 time=be.elapsed_time
+            #             )
 
 def get_client_for_user(userID):
     # Get the client for a user.
@@ -593,3 +596,6 @@ def stats(request):
         'chartdata': chartdata
     }
     return render(request, "tracker/stats.html", context)
+
+def about(request):
+    return render(request, "tracker/about.html")
