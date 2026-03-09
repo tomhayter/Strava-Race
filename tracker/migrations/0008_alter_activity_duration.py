@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='activity',
             name='duration',
-            field=models.DateTimeField(),
+            field=models.DurationField(),
         ),
     ]

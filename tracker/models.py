@@ -3,7 +3,7 @@ from django.contrib.auth.models import User as WebUser
 
 class User(models.Model):
     webuser = models.OneToOneField(WebUser, on_delete=models.CASCADE, null=True)
-    strava_id = models.IntegerField()
+    strava_id = models.BigIntegerField()
     firstName = models.CharField(max_length=100)
     lastName = models.CharField(max_length=100)
     accessToken = models.CharField(max_length=300)
@@ -55,7 +55,7 @@ class Activity(models.Model):
     duration = models.DurationField()
     country = models.CharField(max_length=100)
     startDate = models.DateField()
-    stravaID = models.IntegerField()
+    stravaID = models.BigIntegerField()
 
     def __str__(self):
         return f"{str(self.user)} - {self.name}"
